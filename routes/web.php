@@ -50,12 +50,6 @@ Route::middleware(['auth','role:admin'])->group(function () {
 });
 //     Agent group middleware
 
-Route::middleware(['auth','role:seller'])->group(function () {
-    Route::get('/seller/dashboard', [AgentController::class, 'AgentDashboard'])->name('seller.dashboard');
-});
-Route::middleware(['auth','role:guard'])->group(function () {
-    Route::get('/guard/dashboard', [AgentController::class, 'AgentDashboard'])->name('guard.dashboard');
-});
 Route::middleware(['auth','role:warehouseman'])->group(function () {
     Route::get('/warehouseman/dashboard', [AgentController::class, 'AgentDashboard'])->name('warehouseman.dashboard');
 });
