@@ -558,6 +558,17 @@ Users
                                                     <!--end::Input-->
                                                     <div class="fv-plugins-message-container invalid-feedback"></div>
                                                 </div>
+                                                <div class="fv-row mb-7 fv-plugins-icon-container">
+                                                    <!--begin::Label-->
+                                                    <label class="required fw-bold fs-6 mb-2">Phone Number</label>
+                                                    <!--end::Label-->
+                                                    <!--begin::Input-->
+                                                    <input type="text" name="phone"
+                                                           class="form-control form-control-solid mb-3 mb-lg-0"
+                                                           placeholder="+998999999999" >
+                                                    <!--end::Input-->
+                                                    <div class="fv-plugins-message-container invalid-feedback"></div>
+                                                </div>
                                                 <!--end::Input group-->
                                                 <!--begin::Input group-->
                                                 <div class="mb-10">

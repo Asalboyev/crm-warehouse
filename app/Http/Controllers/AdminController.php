@@ -47,6 +47,7 @@ class AdminController extends Controller
         $validatedData = $request->validate([
             'name' => 'required|string|max:255',
             'password' => 'required|string|max:20',
+            'phone' => 'required|string|max:20',
             'email' => 'required|string|email|max:255|unique:users',
             'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // Rasm uchun qo'shimcha validatsiya
         ]);
@@ -66,17 +67,14 @@ class AdminController extends Controller
         $user = User::create([
             'name' => $validatedData['name'],
             'email' => $validatedData['email'],
+            'phone' => $validatedData['phone'],
             'password' => Hash::make($validatedData['password']), // Parolni hash qilish
             'photo' => $photoPath, // Rasm yo'lini saqlash (agar yuklangan bo'lsa)
         ]);
 
         // Foydalanuvchi ma'lumotlarini ko'rsatish
-        return response()->json([
-            'message' => 'Foydalanuvchi muvaffaqiyatli yaratildi.',
-            'user' => $user,
-            'generated_password' => $validatedData['password'], // Foydalanuvchiga tayinlangan parolni qaytarish
-            'photo_url' => $photoPath ? Storage::url($photoPath) : null, // Rasmning to'liq yo'lini qaytarish
-        ]);
+        return redirect()->route('users')->with(['message' => 'Successfully added!']);
+
     }
 
     public function users_edit($id)
@@ -85,7 +83,50 @@ class AdminController extends Controller
     $user = User::find($id);
     return view('admin.user-edit',compact('user'));
 
-    }//End Method
+    }
+    public function user_update(Request $request, $id)
+    {
+        // Foydalanuvchi ma'lumotlarini tasdiqlash
+        $validatedData = $request->validate([
+            'name' => 'required|string|max:255',
+            'role' => 'required|string|max:10', // Validate role
+            'email' => 'required|string|email|max:255|unique:users,email,' . $id, // Unique check should ignore current user's email
+            'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // Rasm uchun qo'shimcha validatsiya
+        ]);
+
+        // Foydalanuvchini topish
+        $user = User::findOrFail($id);
+
+        // Fayl saqlash uchun boshlang'ich yo'l
+        $photoPath = null;
+
+        // Agar rasm yuklangan bo'lsa, uni saqlaymiz
+        if ($request->hasFile('photo')) {
+            // Eski rasmini o'chirish (agar kerak bo'lsa)
+            if ($user->photo) {
+                Storage::disk('public')->delete($user->photo);
+            }
+            $photoPath = $request->file('photo')->store('photos', 'public'); // Storage/public/photos ichiga saqlash
+        }
+
+        // Foydalanuvchini yangilash
+        $user->name = $validatedData['name'];
+        $user->email = $validatedData['email'];
+        $user->role = $validatedData['role']; // Assign role from validated data
+
+        // Rasm yo'lini saqlash (agar yuklangan bo'lsa)
+        $user->photo = $photoPath ? $photoPath : $user->photo;
+
+        $user->save(); // O'zgarishlarni saqlash
+
+        // Foydalanuvchi ma'lumotlarini ko'rsatish
+        return redirect()->back()->with(['message' => 'Successfully updated!']);
+    }
+
+
+
+
+    //End Method
 
     public function AdminProfileStore(Request $request)
     {
