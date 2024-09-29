@@ -7,6 +7,8 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Storage;
 
 class AdminController extends Controller
 {
@@ -36,11 +38,52 @@ class AdminController extends Controller
         $users = User::latest()->paginate(10);;
         return view('admin.users', compact('users'));
     }
-    public function AdminProfile()
+
+
+    public function users_create(Request $request)
     {
-    $id = Auth::user()->id;
-    $profileData = User::find($id);
-    return view('admin.admin_profile_view',compact('profileData'));
+
+        // Foydalanuvchi ma'lumotlarini tasdiqlash
+        $validatedData = $request->validate([
+            'name' => 'required|string|max:255',
+            'password' => 'required|string|max:20',
+            'email' => 'required|string|email|max:255|unique:users',
+            'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // Rasm uchun qo'shimcha validatsiya
+        ]);
+
+        // Tasodifiy parol yaratish
+//        $password = Str::random(8);
+
+        // Fayl saqlash uchun boshlang'ich yo'l
+        $photoPath = null;
+
+        // Agar rasm yuklangan bo'lsa, uni saqlaymiz
+        if ($request->hasFile('photo')) {
+            $photoPath = $request->file('photo')->store('photos', 'public'); // Storage/public/photos ichiga saqlash
+        }
+
+        // Foydalanuvchini yaratish
+        $user = User::create([
+            'name' => $validatedData['name'],
+            'email' => $validatedData['email'],
+            'password' => Hash::make($validatedData['password']), // Parolni hash qilish
+            'photo' => $photoPath, // Rasm yo'lini saqlash (agar yuklangan bo'lsa)
+        ]);
+
+        // Foydalanuvchi ma'lumotlarini ko'rsatish
+        return response()->json([
+            'message' => 'Foydalanuvchi muvaffaqiyatli yaratildi.',
+            'user' => $user,
+            'generated_password' => $validatedData['password'], // Foydalanuvchiga tayinlangan parolni qaytarish
+            'photo_url' => $photoPath ? Storage::url($photoPath) : null, // Rasmning to'liq yo'lini qaytarish
+        ]);
+    }
+
+    public function users_edit($id)
+    {
+//    $id = Auth::user()->id;
+    $user = User::find($id);
+    return view('admin.user-edit',compact('user'));
 
     }//End Method
 

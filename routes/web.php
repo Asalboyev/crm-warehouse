@@ -38,6 +38,9 @@ require __DIR__.'/auth.php';
 Route::middleware(['auth','role:admin'])->group(function () {
     Route::get('dashboard', [AdminController::class, 'AdminDashboard'])->name('dashboard');
     Route::get('users', [AdminController::class, 'users'])->name('users');
+    Route::post('users', [AdminController::class, 'users_create'])->name('users.create');
+    Route::get('user/{id}/edit', [AdminController::class, 'users_edit'])->name('user.edit');
+    Route::delete('user/{id}/destroy', [AdminController::class, 'users_destroy'])->name('user.destroy');
     Route::get('/admin/logout', [AdminController::class, 'AdminLogout'])->name('admin.logout');
     Route::get('/admin/profile', [AdminController::class, 'AdminProfile'])->name('admin.profile');
     Route::post('/admin/profile/store', [AdminController::class, 'AdminProfileStore'])->name('admin.profile.store');
