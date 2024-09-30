@@ -89,7 +89,7 @@ class AdminController extends Controller
         // Foydalanuvchi ma'lumotlarini tasdiqlash
         $validatedData = $request->validate([
             'name' => 'required|string|max:255',
-            'role' => 'required|string|max:10', // Validate role
+            'role' => 'required|string|max:20', // Validate role
             'email' => 'required|string|email|max:255|unique:users,email,' . $id, // Unique check should ignore current user's email
             'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // Rasm uchun qo'shimcha validatsiya
         ]);
@@ -121,6 +121,23 @@ class AdminController extends Controller
 
         // Foydalanuvchi ma'lumotlarini ko'rsatish
         return redirect()->back()->with(['message' => 'Successfully updated!']);
+    }
+    public function user_updatePassword(Request $request, $id)
+    {
+        // Foydalanuvchi ma'lumotlarini tasdiqlash
+        $validatedData = $request->validate([
+            'new_password' => 'required|string|min:3|confirmed', // Yangi parolni tasdiqlash
+        ]);
+
+        // Foydalanuvchini topish
+        $user = User::findOrFail($id);
+
+        // Yangi parolni o'rnatish
+        $user->password = Hash::make($validatedData['new_password']); // Parolni hash qilib saqlash
+        $user->save(); // O'zgarishlarni saqlash
+
+        // Foydalanuvchi ma'lumotlarini ko'rsatish
+        return redirect()->back()->with(['message' => 'Password successfully updated!']);
     }
 
 

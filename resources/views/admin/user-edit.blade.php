@@ -431,9 +431,9 @@
                                                 <tbody class="fs-6 fw-bold text-gray-600">
                                                 <tr>
                                                     <td>Email</td>
-                                                    <td>smith@kpmg.com</td>
+                                                    <td>{{$user->email}}</td>
                                                     <td class="text-end">
-                                                        <button type="button" class="btn btn-icon btn-active-light-primary w-30px h-30px ms-auto" data-bs-toggle="modal" data-bs-target="#kt_modal_update_email">
+                                                        <button type="button" class="btn btn-icon btn-active-light-primary w-30px h-30px ms-auto" data-bs-toggle="modal" data-bs-target="#kt_modal_update_details">
                                                             <!--begin::Svg Icon | path: icons/duotune/art/art005.svg-->
                                                             <span class="svg-icon svg-icon-3">
 																					<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
@@ -463,9 +463,9 @@
                                                 </tr>
                                                 <tr>
                                                     <td>Role</td>
-                                                    <td>Administrator</td>
+                                                    <td>{{$user->role}}</td>
                                                     <td class="text-end">
-                                                        <button type="button" class="btn btn-icon btn-active-light-primary w-30px h-30px ms-auto" data-bs-toggle="modal" data-bs-target="#kt_modal_update_role">
+                                                        <button type="button" class="btn btn-icon btn-active-light-primary w-30px h-30px ms-auto" data-bs-toggle="modal" data-bs-target="#kt_modal_update_details">
                                                             <!--begin::Svg Icon | path: icons/duotune/art/art005.svg-->
                                                             <span class="svg-icon svg-icon-3">
 																					<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
@@ -510,10 +510,9 @@
                             <div class="modal-body scroll-y mx-5 mx-xl-15 my-7">
                                 <!--begin::Form-->
                                 <form id="kt_modal_update_user_form"
-                                      class="form fv-plugins-bootstrap5 fv-plugins-framework" action="{{route('user.update', $user->id)}}" method="post">
+                                      class="form fv-plugins-bootstrap5 fv-plugins-framework" action="{{ route('user.update', $user->id)}}" method="post">
                                     @csrf
                                     @method("PUT")
-                                    <!--begin::Scroll-->
                                     <div class="d-flex flex-column scroll-y me-n7 pe-7"
                                          id="kt_modal_add_user_scroll" data-kt-scroll="true"
                                          data-kt-scroll-activate="{default: false, lg: true}"
@@ -920,14 +919,10 @@
                             <!--begin::Modal body-->
                             <div class="modal-body scroll-y mx-5 mx-xl-15 my-7">
                                 <!--begin::Form-->
-                                <form id="kt_modal_update_password_form" class="form" action="#">
+                                <form id="kt_modal_update_password_form" class="form" action="{{ route('user.updatePassword', $user->id)}}" method="post">
+                                    @csrf
+                                    @method('PUT')
                                     <!--begin::Input group=-->
-                                    <div class="fv-row mb-10">
-                                        <label class="required form-label fs-6 mb-2">Current Password</label>
-                                        <input class="form-control form-control-lg form-control-solid" type="password" placeholder="" name="current_password" autocomplete="off" />
-                                    </div>
-                                    <!--end::Input group=-->
-                                    <!--begin::Input group-->
                                     <div class="mb-10 fv-row" data-kt-password-meter="true">
                                         <!--begin::Wrapper-->
                                         <div class="mb-1">
@@ -938,9 +933,9 @@
                                             <div class="position-relative mb-3">
                                                 <input class="form-control form-control-lg form-control-solid" type="password" placeholder="" name="new_password" autocomplete="off" />
                                                 <span class="btn btn-sm btn-icon position-absolute translate-middle top-50 end-0 me-n2" data-kt-password-meter-control="visibility">
-																	<i class="bi bi-eye-slash fs-2"></i>
-																	<i class="bi bi-eye fs-2 d-none"></i>
-																</span>
+                                            <i class="bi bi-eye-slash fs-2"></i>
+                                            <i class="bi bi-eye fs-2 d-none"></i>
+                                        </span>
                                             </div>
                                             <!--end::Input wrapper-->
                                             <!--begin::Meter-->
@@ -954,23 +949,25 @@
                                         </div>
                                         <!--end::Wrapper-->
                                         <!--begin::Hint-->
-                                        <div class="text-muted">Use 8 or more characters with a mix of letters, numbers &amp; symbols.</div>
+                                        <div class="text-muted">Use 8 or more characters with a mix of letters, numbers & symbols.</div>
                                         <!--end::Hint-->
                                     </div>
                                     <!--end::Input group=-->
+
                                     <!--begin::Input group=-->
                                     <div class="fv-row mb-10">
                                         <label class="form-label fw-bold fs-6 mb-2">Confirm New Password</label>
-                                        <input class="form-control form-control-lg form-control-solid" type="password" placeholder="" name="confirm_password" autocomplete="off" />
+                                        <input class="form-control form-control-lg form-control-solid" type="password" placeholder="" name="new_password_confirmation" autocomplete="off" />
                                     </div>
                                     <!--end::Input group=-->
+
                                     <!--begin::Actions-->
                                     <div class="text-center pt-15">
                                         <button type="reset" class="btn btn-light me-3" data-kt-users-modal-action="cancel">Discard</button>
                                         <button type="submit" class="btn btn-primary" data-kt-users-modal-action="submit">
                                             <span class="indicator-label">Submit</span>
                                             <span class="indicator-progress">Please wait...
-															<span class="spinner-border spinner-border-sm align-middle ms-2"></span></span>
+                <span class="spinner-border spinner-border-sm align-middle ms-2"></span></span>
                                         </button>
                                     </div>
                                     <!--end::Actions-->

@@ -45,8 +45,7 @@ class LoginRequest extends FormRequest
         $this->ensureIsNotRateLimited();
 
         // Find the user by email, username, or phone
-        $user = User::where('username', $this->login)
-
+        $user = User::where('email', $this->login)
             ->first();
 
         // Check if the user exists and password matches
@@ -58,14 +57,7 @@ class LoginRequest extends FormRequest
             ]);
         }
 
-        // Check if the user has the 'admin' role
-        if ($user->role !== 'admin') {
-            RateLimiter::hit($this->throttleKey());
-
-            throw ValidationException::withMessages([
-                'email' => trans('auth.failed'),
-            ]);
-        }
+        // If you want to allow all users regardless of role, remove the role check
 
         // Log the user in
         Auth::login($user, $this->boolean('remember'));

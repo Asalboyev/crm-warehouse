@@ -20,6 +20,7 @@ class AuthenticatedSessionController extends Controller
         return view('auth.login');
     }
 
+
     /**
      * Handle an incoming authentication request.
      */
@@ -31,7 +32,7 @@ class AuthenticatedSessionController extends Controller
 
         $url = '';
         if ($request->user()->role === 'admin'){
-            $url = 'admin/dashboard';
+            $url = 'dashboard';
         }elseif ($request->user()->role === 'seller'){
             $url = 'seller/dashboard';
         }

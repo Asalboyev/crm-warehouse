@@ -21,7 +21,7 @@ use App\Http\Controllers\Bakend\PropertyTypeController;
 
 
 Route::get('/', function () {
-    return redirect()->route('admin.login');
+    return redirect()->route('login');
 });
 
 
@@ -41,6 +41,8 @@ Route::middleware(['auth','role:admin'])->group(function () {
     Route::post('users', [AdminController::class, 'users_create'])->name('users.create');
     Route::get('user/{id}/edit', [AdminController::class, 'users_edit'])->name('user.edit');
     Route::put('user/{id}', [AdminController::class, 'user_update'])->name('user.update');
+    Route::post('user/{id}/updatePassword', [AdminController::class, 'user_updatePassword'])->name('user.updatePassword');
+
 
     Route::delete('user/{id}/destroy', [AdminController::class, 'users_destroy'])->name('user.destroy');
     Route::get('/admin/logout', [AdminController::class, 'AdminLogout'])->name('admin.logout');

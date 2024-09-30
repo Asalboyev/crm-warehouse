@@ -68,10 +68,10 @@ License: For each use you must have a valid license purchased only from above li
                     <!--begin::Input group-->
                     <div class="fv-row mb-10">
                         <!--begin::Label-->
-                        <label class="form-label fs-6 fw-bolder text-dark">Username</label>
+                        <label class="form-label fs-6 fw-bolder text-dark">Email</label>
                         <!--end::Label-->
                         <!--begin::Input-->
-                        <input class="form-control form-control-lg form-control-solid" placeholder="Username" type="text" id="login" name="login" value="{{old('login')}}"/>
+                        <input class="form-control form-control-lg form-control-solid" placeholder="email" type="email" id="login" name="login" value="{{old('login')}}"/>
                         @error('login')
                         <span style="color: red">{{ $message }}</span>
                         @enderror
