@@ -53,13 +53,18 @@ class UsersTableSeeder extends Seeder
                 'status' => 'active',
             ],
             //user
+
+        ]);
+        DB::table('categories')->insert([
+            //Admineee
             [
-                'name' => '4Aleks',
-                'username' => 'aleks',
-                'email' => 'aleks@gmail.com',
-                'password' => Hash::make('111'),
-                'role' => 'user',
-                'status' => 'active',
+                'name' => 'temr1',
+                'photo' => 'seller',
+            ],
+            // Selller
+            [
+                'name' => 'temr',
+                'photo' => 'seller',
             ],
         ]);
     }

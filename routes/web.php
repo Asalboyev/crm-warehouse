@@ -6,6 +6,7 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AgentController;
 use App\Http\Controllers\MainController;
 use App\Http\Controllers\Bakend\PropertyTypeController;
+use App\Http\Controllers\Backend\CategoriesController;
 
 /*
 |--------------------------------------------------------------------------
@@ -41,16 +42,25 @@ Route::middleware(['auth','role:admin'])->group(function () {
     Route::post('users', [AdminController::class, 'users_create'])->name('users.create');
     Route::get('user/{id}/edit', [AdminController::class, 'users_edit'])->name('user.edit');
     Route::put('user/{id}', [AdminController::class, 'user_update'])->name('user.update');
-    Route::post('user/{id}/updatePassword', [AdminController::class, 'user_updatePassword'])->name('user.updatePassword');
+    Route::put('user/{id}/updatePassword', [AdminController::class, 'user_updatePassword'])->name('user.updatePassword');
+
+    Route::get('categories', [\App\Http\Controllers\Backend\CategoriesController::class, 'index'])->name('categories.index');
+    Route::post('categories',[CategoriesController::class, 'store'])->name('categories.store');
+
+    Route::get('category/{id}/edit',[CategoriesController::class, 'edit'])->name('categories.edit');
+    Route::post('categories/{id}',[CategoriesController::class, 'update'])->name('categories.update');
+
+
+
+
+    Route::post('categories/ajax',[\App\Http\Controllers\Backend\CategoriesController::class, 'ajax'])->name('categories.ajax');
+
+
+
 
 
     Route::delete('user/{id}/destroy', [AdminController::class, 'users_destroy'])->name('user.destroy');
     Route::get('/admin/logout', [AdminController::class, 'AdminLogout'])->name('admin.logout');
-    Route::get('/admin/profile', [AdminController::class, 'AdminProfile'])->name('admin.profile');
-    Route::post('/admin/profile/store', [AdminController::class, 'AdminProfileStore'])->name('admin.profile.store');
-    Route::get('/admin/change/password', [AdminController::class, 'AdminChangePassword'])->name('admin.change.password');
-    Route::post('/admin/update/password', [AdminController::class, 'AdminUpdatePassword'])->name('admin.update.password');
-
 });
 //     Agent group middleware
 

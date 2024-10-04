@@ -33,10 +33,24 @@ class AdminController extends Controller
         return redirect('/admin/login');
     }//End Method
 
-    public function users()
+    public function users(Request $request)
     {
-        $users = User::latest()->paginate(10);;
-        return view('admin.users', compact('users'));
+        $search = $request->input('search');
+
+        $users = User::query()
+            ->when($search, function ($query, $search) {
+                return $query->where('name', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%")
+                    ->orWhere('role', 'like', "%{$search}%");
+            })
+            ->latest()
+            ->paginate(10);
+
+        // If the request is AJAX, return only the user list partial view.
+
+
+        // Otherwise, return the full view.
+        return view('admin.users', compact('users', 'search'));
     }
 
 
@@ -145,65 +159,23 @@ class AdminController extends Controller
 
     //End Method
 
-    public function AdminProfileStore(Request $request)
+
+    public function users_destroy($id)
     {
-        $id = Auth::user()->id;
-        $data = User::find($id);
-        $data->username = $request->username;
-        $data->name = $request->name;
-        $data->email = $request->email;
-        $data->phone = $request->phone;
-        $data->photo = $request->photo;
-        $data->address = $request->address;
-        if ($request->file('photo')){
-            $file = $request->file('photo');
-            @unlink(public_path('upload/admin_images/'.$data->photo));
-            $filename = date('YmdHi').$file->getClientOriginalName();
-            $file->move(public_path('upload/admin_images'),$filename);
-            $data['photo'] = $filename;
+        // Foydalanuvchini topish
+        $user = User::find($id);
+
+        // Agar foydalanuvchi topilmasa, xatolik xabarini ko'rsatish
+        if (!$user) {
+            return redirect()->back()->with(['error' => 'User not found!']);
         }
-        $data->save();
-        $notification = array(
-            'message' =>  'Admin Frofile Update Succesfully',
-            'alert-type' => 'success',
-        );
-        return redirect()->back()->with($notification);
-    }//End Method
 
-    public function  AdminChangePassword()
-    {
-        $id = Auth::user()->id;
-        $profileData = User::find($id);
-        return view('admin.admin_change_password',compact('profileData'));
+        // Foydalanuvchini o'chirish
+        $user->delete();
 
-    }// End Merhod
-
-    public function AdminUpdatePassword(Request $request)
-    {
-
-        $request->validate([
-            'old_password' => 'required',
-            'new_password' => 'required|confirmed',
-        ]);
-
-        /// Match teh old password
-        if (!Hash::check($request->old_password, auth::user()->password)) {
-            $notification = array(
-                'message' => 'Old Password  Does not Match!',
-                'alert-type' => 'error',
-            );
-            return back()->with($notification);
-            /// Update  the New password
-            User::whereId(auth()->user()->id)->update([
-                'password' => Hash::make($request->new_password)
-            ]);
-            $notification = array(
-                'message' => 'Password Change SuccessFully',
-                'alert-type' => 'successs',
-            );
-            return back()->with($notification);
-        }
+        // O'chirilgandan keyin foydalanuvchini qayta yo'naltirish va xabar ko'rsatish
+        return redirect()->back()->with(['message' => 'User successfully deleted!']);
     }
-    //end Method
+
 
 }

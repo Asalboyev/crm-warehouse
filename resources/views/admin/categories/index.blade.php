@@ -16,9 +16,11 @@
     <!--begin::Global Stylesheets Bundle(used by all pages)-->
     <link href="{{ asset('assets/plugins/global/plugins.bundle.css')}}" rel="stylesheet" type="text/css" />
     <link href="{{ asset('assets/css/style.bundle.css')}}" rel="stylesheet" type="text/css" />
-@endsection
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+
 @section('content')
 
+    @include('admin.success-file')
     <div class="content d-flex flex-column flex-column-fluid" id="kt_content">
         <!--begin::Toolbar-->
         <div class="toolbar" id="kt_toolbar">
@@ -29,7 +31,7 @@
                      data-kt-swapper-parent="{default: '#kt_content_container', 'lg': '#kt_toolbar_container'}"
                      class="page-title d-flex align-items-center flex-wrap me-3 mb-5 mb-lg-0">
                     <!--begin::Title-->
-                    <h1 class="d-flex text-dark fw-bolder fs-3 align-items-center my-1">Users List</h1>
+                    <h1 class="d-flex text-dark fw-bolder fs-3 align-items-center my-1">Categories List</h1>
                     <!--end::Title-->
                     <!--begin::Separator-->
                     <span class="h-20px border-gray-300 border-start mx-4"></span>
@@ -47,7 +49,7 @@
                         </li>
                         <!--end::Item-->
                         <!--begin::Item-->
-                        <li class="breadcrumb-item text-muted">User Management</li>
+                        <li class="breadcrumb-item text-muted">Categories Management</li>
                         <!--end::Item-->
                         <!--begin::Item-->
                         <li class="breadcrumb-item">
@@ -55,7 +57,7 @@
                         </li>
                         <!--end::Item-->
                         <!--begin::Item-->
-                        <li class="breadcrumb-item text-muted">Users</li>
+                        <li class="breadcrumb-item text-muted">Categories</li>
                         <!--end::Item-->
                         <!--begin::Item-->
                         <li class="breadcrumb-item">
@@ -63,7 +65,7 @@
                         </li>
                         <!--end::Item-->
                         <!--begin::Item-->
-                        <li class="breadcrumb-item text-dark">Users List</li>
+                        <li class="breadcrumb-item text-dark">Categories List</li>
                         <!--end::Item-->
                     </ul>
                     <!--end::Breadcrumb-->
@@ -85,10 +87,10 @@
                         <!--begin::Card title-->
                         <div class="card-title">
                             <!--begin::Search-->
-                            <form class="d-flex align-items-center position-relative my-1" id="search-form" action="{{ route('users') }}" method="GET"">
+                            <form class="d-flex align-items-center position-relative my-1" id="search-form" action="{{ route('categories.index') }}" method="GET">
 
-                                <!--begin::Svg Icon | path: icons/duotune/general/gen021.svg-->
-                                <span class="svg-icon svg-icon-1 position-absolute ms-6">
+                            <!--begin::Svg Icon | path: icons/duotune/general/gen021.svg-->
+                            <span class="svg-icon svg-icon-1 position-absolute ms-6">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
                                      fill="none">
                                     <rect opacity="0.5" x="17.0365" y="15.1223" width="8.15546" height="2" rx="1"
@@ -98,8 +100,8 @@
                                             fill="currentColor"></path>
                                 </svg>
                             </span>
-                                <!--end::Svg Icon-->
-                                <input  data-kt-user-table-filter="search" class="form-control form-control-solid w-250px ps-14" type="text" name="search" id="search-input" value="{{ request('search') }}" placeholder="Search users">
+                            <!--end::Svg Icon-->
+                            <input  data-kt-user-table-filter="search" class="form-control form-control-solid w-250px ps-14" type="text" name="search" id="search-input" value="{{ request('search') }}" placeholder="Search users">
                             </form>
                             <!--end::Search-->
                         </div>
@@ -123,7 +125,7 @@
                                         </rect>
                                     </svg>
                                 </span>
-                                    <!--end::Svg Icon-->Add User</button>
+                                    <!--end::Svg Icon-->Add Category</button>
                                 <!--end::Add user-->
                             </div>
 
@@ -137,7 +139,7 @@
                                         <!--begin::Modal header-->
                                         <div class="modal-header" id="kt_modal_add_user_header">
                                             <!--begin::Modal title-->
-                                            <h2 class="fw-bolder">Add User</h2>
+                                            <h2 class="fw-bolder">Add Category</h2>
                                             <!--end::Modal title-->
                                             <!--begin::Close-->
                                             <div class="btn btn-icon btn-sm btn-active-icon-primary"
@@ -161,7 +163,7 @@
                                         <div class="modal-body scroll-y mx-5 mx-xl-15 my-7">
                                             <!--begin::Form-->
                                             <form id="kt_modal_add_user_form"
-                                                  class="form fv-plugins-bootstrap5 fv-plugins-framework" action="{{route('users.create')}}" method="post" enctype="multipart/form-data">
+                                                  class="form fv-plugins-bootstrap5 fv-plugins-framework" action="{{route('categories.store')}}" method="post" enctype="multipart/form-data">
                                                 @csrf
                                                 <!--begin::Scroll-->
                                                 <div class="d-flex flex-column scroll-y me-n7 pe-7"
@@ -174,45 +176,18 @@
                                                     <!--begin::Input group-->
                                                     <div class="fv-row mb-7">
                                                         <!--begin::Label-->
-                                                        <label class="d-block fw-bold fs-6 mb-5">Avatar</label>
+                                                        <label class="d-block fw-bold fs-6 mb-5">Photo</label>
                                                         <!--end::Label-->
                                                         <!--begin::Image input-->
-                                                        <div class="image-input image-input-outline"
-                                                             data-kt-image-input="true"
-                                                             style="background-image: url('assets/media/svg/avatars/blank.svg')">
-                                                            <!--begin::Preview existing avatar-->
-                                                            <div class="image-input-wrapper w-125px h-125px"
-                                                                 style="background-image: url('assets/media/svg/avatars/blank.svg');">
+                                                        <div class="card-body  pt-0">
+                                                            <div class="image-input image-input-empty image-input-outline mb-3" data-kt-image-input="true"
+                                                                 style="background-image: url(assets/media/svg/files/blank-image.svg)">
+                                                                <div id="my-dropzone" class="dropzone">
+                                                                    <div class="fallback">
+                                                                        <input name="photo" type="file" />
+                                                                    </div>
+                                                                </div>
                                                             </div>
-                                                            <!--end::Preview existing avatar-->
-                                                            <!--begin::Label-->
-                                                            <label
-                                                                    class="btn btn-icon btn-circle btn-active-color-primary w-25px h-25px bg-body shadow"
-                                                                    data-kt-image-input-action="change" data-bs-toggle="tooltip"
-                                                                    title="" data-bs-original-title="Change avatar">
-                                                                <i class="bi bi-pencil-fill fs-7"></i>
-                                                                <!--begin::Inputs-->
-                                                                <input type="file" name="photo" >
-                                                                <input type="hidden" name="photo">
-                                                                <!--end::Inputs-->
-                                                            </label>
-                                                            <!--end::Label-->
-                                                            <!--begin::Cancel-->
-                                                            <span
-                                                                    class="btn btn-icon btn-circle btn-active-color-primary w-25px h-25px bg-body shadow"
-                                                                    data-kt-image-input-action="cancel" data-bs-toggle="tooltip"
-                                                                    title="" data-bs-original-title="Cancel avatar">
-                                                            <i class="bi bi-x fs-2"></i>
-                                                        </span>
-                                                            <!--end::Cancel-->
-                                                            <!--begin::Remove-->
-                                                            <span
-                                                                    class="btn btn-icon btn-circle btn-active-color-primary w-25px h-25px bg-body shadow"
-                                                                    data-kt-image-input-action="remove" data-bs-toggle="tooltip"
-                                                                    title="" data-bs-original-title="Remove avatar">
-                                                            <i class="bi bi-x fs-2"></i>
-                                                        </span>
-                                                            <!--end::Remove-->
                                                         </div>
                                                         <!--end::Image input-->
                                                         <!--begin::Hint-->
@@ -232,56 +207,13 @@
                                                         <!--end::Input-->
                                                         <div class="fv-plugins-message-container invalid-feedback"></div>
                                                     </div>
-                                                    <!--end::Input group-->
-                                                    <!--begin::Input group-->
-                                                    <div class="fv-row mb-7 fv-plugins-icon-container">
-                                                        <!--begin::Label-->
-                                                        <label class="required fw-bold fs-6 mb-2">Email</label>
-                                                        <!--end::Label-->
-                                                        <!--begin::Input-->
-                                                        <input type="email" name="email"
-                                                               class="form-control form-control-solid mb-3 mb-lg-0"
-                                                               placeholder="example@domain.com" >
-                                                        <!--end::Input-->
-                                                        <div class="fv-plugins-message-container invalid-feedback"></div>
-                                                    </div>
-                                                    <div class="fv-row mb-7 fv-plugins-icon-container">
-                                                        <!--begin::Label-->
-                                                        <label class="required fw-bold fs-6 mb-2">Phone Number</label>
-                                                        <!--end::Label-->
-                                                        <!--begin::Input-->
-                                                        <input type="text" name="phone"
-                                                               class="form-control form-control-solid mb-3 mb-lg-0"
-                                                               placeholder="+998999999999" >
-                                                        <!--end::Input-->
-                                                        <div class="fv-plugins-message-container invalid-feedback"></div>
-                                                    </div>
-                                                    <!--end::Input group-->
-                                                    <!--begin::Input group-->
-                                                    <div class="mb-10">
-                                                        <label class="form-label fs-6 fw-bold">Role:</label>
-                                                        <select class="form-select form-select-solid fw-bolder" data-kt-select2="true" data-placeholder="Select option" data-allow-clear="true" name="role" data-kt-user-table-filter="role" data-hide-search="true">
-                                                            <option></option>
-                                                            <option value="admin">Admin</option>
-                                                            <option value="seller">Seller</option>
-                                                            <option value="guard">Guard</option>
-                                                            <option value="warehouseman">Warehouseman</option>
-                                                            <option value="Trial">Trial</option>
-                                                        </select>
-                                                    </div>                                                <!--end::Input group-->
                                                 </div>
-                                                <div class="fv-row mb-7 fv-plugins-icon-container">
-                                                    <!--begin::Label-->
-                                                    <label class="required fw-bold fs-6 mb-2">Password</label>
-                                                    <!--end::Label-->
-                                                    <!--begin::Input-->
-                                                    <input type="password" name="password"
-                                                           class="form-control form-control-solid mb-3 mb-lg-0"
-                                                           placeholder="******" >
+
                                                     <!--end::Input-->
                                                     <div class="fv-plugins-message-container invalid-feedback"></div>
-                                                </div>
-                                                <!--end::Scroll-->
+
+
+                                                    <!--end::Scroll-->
                                                 <!--begin::Actions-->
                                                 <div class="text-center pt-15">
                                                     <button type="reset" class="btn btn-light me-3"
@@ -289,14 +221,15 @@
                                                     <button type="submit" class="btn btn-primary"
                                                             data-kt-users-modal-action="submit">
                                                         <span class="indicator-label">Submit</span>
-                                                        <span class="indicator-progress">Please wait...
-                                                        <span
-                                                                class="spinner-border spinner-border-sm align-middle ms-2"></span></span>
+                                                 </span>
                                                     </button>
                                                 </div>
                                                 <!--end::Actions-->
-                                                <div></div>
+                                                <div>
+                                                    <input type="hidden" name="photo" id="image_name">
+
                                             </form>
+
                                             <!--end::Form-->
                                         </div>
                                         <!--end::Modal body-->
@@ -333,19 +266,16 @@
                                         </th>
                                         <th class="min-w-125px sorting" tabindex="0" aria-controls="kt_table_users"
                                             rowspan="1" colspan="1" aria-label="User: activate to sort column ascending"
-                                            style="width: 288.641px;">User</th>
+                                            style="width: 288.641px;">photo</th>
                                         <th class="min-w-125px sorting" tabindex="0" aria-controls="kt_table_users"
                                             rowspan="1" colspan="1" aria-label="Role: activate to sort column ascending"
-                                            style="width: 160.516px;">Role</th>
+                                            style="width: 160.516px;">Name</th>
                                         <th class="min-w-125px sorting" tabindex="0" aria-controls="kt_table_users"
                                             rowspan="1" colspan="1"
                                             aria-label="Last login: activate to sort column ascending"
-                                            style="width: 160.516px;">Last login</th>
+                                            style="width: 160.516px;">Joined Date	</th>
 
-                                        <th class="min-w-125px sorting" tabindex="0" aria-controls="kt_table_users"
-                                            rowspan="1" colspan="1"
-                                            aria-label="Joined Date: activate to sort column ascending"
-                                            style="width: 208.062px;">Joined Date</th>
+
                                         <th class="text-end min-w-100px sorting_disabled" rowspan="1" colspan="1"
                                             aria-label="Actions" style="width: 129px;">Actions</th>
                                     </tr>
@@ -355,7 +285,7 @@
                                     <!--begin::Table body-->
                                     <tbody class="text-gray-600 fw-bold">
 
-                                    @foreach($users as $user)
+                                    @foreach($categories as $category)
                                         <tr class="odd">
                                             <!--begin::Checkbox-->
                                             <td>
@@ -371,43 +301,28 @@
                                                 <div class="symbol symbol-circle symbol-50px overflow-hidden me-3">
                                                     <a href="#">
                                                         <div class="symbol-label">
-                                                            <img src="assets/media/svg/avatars/blank.svg" alt="Emma Smith"
+                                                            <img src="{{ asset(($category->photo ?? 'default.png')) }}" alt=""
                                                                  class="w-100">
                                                         </div>
                                                     </a>
                                                 </div>
                                                 <!--end::Avatar-->
                                                 <!--begin::User details-->
-                                                <div class="d-flex flex-column">
-                                                    <a href="#"
-                                                       class="text-gray-800 text-hover-primary mb-1">{{$user->name}}</a>
-                                                    <span>{{$user->email}}</span>
-                                                </div>
+
                                                 <!--begin::User details-->
                                             </td>
-                                            <!--end::User=-->
-                                            <!--begin::Role=-->
-                                            <td>{{$user->role}}</td>
-                                            <!--end::Role=-->
-                                            <!--begin::Last login=-->
-                                            <td data-order="2024-09-28T21:29:30+05:00">
-                                                <div class="badge badge-light fw-bolder">{{ $user->last_login_at ?
-                                                $user->last_login_at->diffForHumans() : 'Never logged in' }}</div>
-                                            </td>
-                                            <!--end::Last login=-->
-                                            <!--begin::Two step=-->
+                                            <td data-order="2022-07-25T18:05:00+05:00">{{$category->name}}</td>
 
-                                            <!--end::Two step=-->
-                                            <!--begin::Joined-->
-                                            <td data-order="2022-07-25T18:05:00+05:00">{{$user->created_at}}</td>
+
+                                            <td data-order="2022-07-25T18:05:00+05:00">{{$category->created_at}}</td>
                                             <!--begin::Joined-->
                                             <!--begin::Action=-->
                                             <td class="text-end">
-                                                <form class="" action="{{ route('user.destroy', $user->id) }}"
+                                                <form class="" action="{{ route('user.destroy', $category->id) }}"
                                                       method="POST">
                                                     @csrf
                                                     @method('DELETE')
-                                                    <a href="{{ route('user.edit', $user->id) }}"
+                                                    <a href="{{ route('categories.edit', $category->id) }}"
                                                        class="btn btn-icon btn-bg-light btn-active-color-primary btn-sm me-1">
                                                         <!--begin::Svg Icon | path: icons/duotune/art/art005.svg-->
                                                         <span class="svg-icon svg-icon-3">
@@ -453,7 +368,7 @@
                                 <div
                                         class="col-sm-12 col-md-7 d-flex align-items-center justify-content-center justify-content-md-end">
                                     <div class="dataTables_paginate paging_simple_numbers" id="kt_table_users_paginate">
-                                        <ul class="pagination">{{$users->links()}}</ul>
+                                        <ul class="pagination">{{$categories->links()}}</ul>
                                     </div>
                                 </div>
                             </div>
@@ -468,7 +383,46 @@
     </div>
 @endsection
 @section("script")
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.9.2/min/dropzone.min.js"></script>
+    <script>
+        Dropzone.autoDiscover = false;
+        $(document).ready(function() {
+            var csrfToken = $('meta[name="csrf-token"]').attr('content');
+            var myDropzone = new Dropzone("#my-dropzone", {
+                url: "{{ route('categories.ajax') }}", // Upload yo'lini kiritish
+                paramName: "file",
+                maxFilesize: 5,
+                acceptedFiles: ".jpeg,.jpg,.png,.gif,.webp",
+                headers: {
+                    'X-CSRF-TOKEN': csrfToken
+                },
+                maxFiles: 1,
+                addRemoveLinks: true,
+                init: function() {
+                    this.on("success", function(file, response) {
+                        if (response.success) {
+                            // Dropzone orqali yuklangan rasm yo'lini formaga qo'shamiz
+                            $('#image_name').val(response.success);
 
+                            // Fayl yuklangandan keyin formni yuboramiz
+                            $('#category-form').submit();
+                        } else {
+                            console.log(response);
+                        }
+                    });
+
+                    this.on("error", function(file, response) {
+                        if (typeof response === 'object') {
+                            alert(JSON.stringify(response));
+                        } else {
+                            alert(response);
+                        }
+                    });
+                }
+            });
+        });
+
+    </script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
         $(document).ready(function() {
@@ -484,7 +438,7 @@
 
                 // AJAX orqali qidiruv so'rovi yuboriladi
                 $.ajax({
-                    url: '{{ route('users') }}', // Backend qidiruv marshruti
+                    url: '{{ route('categories.index') }}', // Backend qidiruv marshruti
                     type: 'GET',
                     data: {
                         search: searchQuery
@@ -501,20 +455,4 @@
         });
     </script>
 
-    <script src="/assets/plugins/global/plugins.bundle.js"></script>
-    <script src="/assets/js/scripts.bundle.js"></script>
-    <!--end::Global Javascript Bundle-->
-    <!--begin::Page Vendors Javascript(used by this page)-->
-    <script src="/assets/plugins/custom/datatables/datatables.bundle.js"></script>
-    <!--end::Page Vendors Javascript-->
-    <!--begin::Page Custom Javascript(used by this page)-->
-    <script src="/assets/js/custom/apps/user-management/users/list/table.js"></script>
-    <script src="/assets/js/custom/apps/user-management/users/list/export-users.js"></script>
-    <script src="/assets/js/custom/apps/user-management/users/list/add.js"></script>
-    <script src="/assets/js/widgets.bundle.js"></script>
-    <script src="/assets/js/custom/widgets.js"></script>
-    <script src="/assets/js/custom/apps/chat/chat.js"></script>
-    <script src="/assets/js/custom/utilities/modals/upgrade-plan.js"></script>
-    <script src="/assets/js/custom/utilities/modals/create-app.js"></script>
-    <script src="/assets/js/custom/utilities/modals/users-search.js"></script>
 @endsection

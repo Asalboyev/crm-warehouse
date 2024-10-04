@@ -29,25 +29,26 @@ class AuthenticatedSessionController extends Controller
         $request->authenticate();
 
         $request->session()->regenerate();
-
         $url = '';
-        if ($request->user()->role === 'admin'){
+        $role = $request->user()->role;
+
+        if ($role === 'admin') {
             $url = 'dashboard';
-        }elseif ($request->user()->role === 'seller'){
+        } elseif ($role === 'seller') {
             $url = 'seller/dashboard';
-        }
-        elseif ($request->user()->role === 'guard'){
+        } elseif ($role === 'guard') {
             $url = 'guard/dashboard';
-        }
-        elseif ($request->user()->role === 'warehouseman'){
+        } elseif ($role === 'warehouseman') {
             $url = 'warehouseman/dashboard';
-        }elseif ($request->user()->role === 'user'){
-            $url = '/dashboard';
-
+        } elseif ($role === 'user') {
+            $url = 'user/dashboard';
+        } else {
+            // Role mos kelmasa, kirishni taqiqlash
+            abort(403, 'Sizda ushbu sahifaga kirish uchun ruxsat yo\'q.');
         }
 
-
-        return redirect()->intended($url);
+// Foydalanuvchini yo'naltirish
+        return redirect($url);
     }
 
     /**
