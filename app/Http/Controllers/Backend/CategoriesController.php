@@ -8,48 +8,46 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Intervention\Image\Facades\Image;
 
+
 class CategoriesController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
 
+        public function ajax(Request $request)
+        {
+            if ($request->hasFile('file')) {
+                try {
+                    $image = $request->file('file');
 
-    public function ajax(Request $request)
-    {
-        if ($request->hasFile('file')) {
-            try {
-                $image = $request->file('file');
+                    // Generate a unique name for the image
+                    $imageName = time() . '.webp'; // Save as webp
 
-                // Generate a unique name for the image
-                $imageName = time() . '.webp'; // Save as webp
+                    // Convert image to webp format
+                    $img = Image::make($image)->encode('webp', 90); // 90 is the quality
 
-                // Convert image to webp format
-                $img = Image::make($image)->encode('webp', 90); // 90 is the quality
+                    // Define path to store the image
+                    $path = 'categories-images/' . $imageName;
 
-                // Define path to store the image
-                $path = 'categories-images/' . $imageName;
+                    // Save the converted image to storage
+                    Storage::disk('public')->put($path, $img);
 
-                // Save the converted image to storage
-                Storage::disk('public')->put($path, $img);
+                    // Return success response with the relative path
+                    return response()->json(['success' => $path]);
 
-                // Generate full URL for the image
-                $fullUrl = url('storage/' . $path);
+                } catch (\Exception $e) {
+                    // Log the exception for debugging
+                    \Log::error('Image upload failed: ' . $e->getMessage());
 
-                // Return success response with the image URL
-                return response()->json(['success' => $fullUrl]);
-            } catch (\Exception $e) {
-                // Log the exception for debugging
-                \Log::error('Image upload failed: ' . $e->getMessage());
-
-                // Return error response
-                return response()->json(['error' => 'Failed to upload image.'], 500);
+                    // Return error response
+                    return response()->json(['error' => 'Failed to upload image.'], 500);
+                }
+            } else {
+                // Return error response if no file is uploaded
+                return response()->json(['error' => 'No file uploaded'], 400);
             }
-        } else {
-            // Return error response if no file is uploaded
-            return response()->json(['error' => 'No file uploaded'], 400);
         }
-    }
 
     public function index(Request $request)
     {
@@ -80,7 +78,6 @@ class CategoriesController extends Controller
      */
     public function store(Request $request)
     {
-        dd($request->all());
 
         $request->validate([
             'name' => 'required'
@@ -117,16 +114,39 @@ class CategoriesController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(Request $request, $id)
     {
-        //
+        $request->validate([
+            'name' => 'required'
+        ]);
+        $category = Category::findOrFail($id);
+        $data = $request->all();
+
+        if ($request->has('image_name')) {
+            $data['photo'] = $request->input('image_name');
+        }
+        $category->update($data);
+
+        return redirect()->route('categories.index')->with(['message' => 'Successfully updated!']);
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy($id)
     {
-        //
+        // Foydalanuvchini topish
+        $category = Category::find($id);
+
+        // Agar foydalanuvchi topilmasa, xatolik xabarini ko'rsatish
+        if (!$category) {
+            return redirect()->back()->with(['error' => 'Category not found!']);
+        }
+
+        // Foydalanuvchini o'chirish
+        $category->delete();
+
+        // O'chirilgandan keyin foydalanuvchini qayta yo'naltirish va xabar ko'rsatish
+        return redirect()->back()->with(['message' => 'Category successfully deleted!']);
     }
 }
