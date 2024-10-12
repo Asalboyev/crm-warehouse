@@ -13,10 +13,11 @@ return new class extends Migration
     {
         Schema::create('orders', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('client_id')->constrained('clients'); // Assuming you have a clients table
-            $table->decimal('total_price', 10, 2); // Total price of the order
-            $table->decimal('total_weight', 10, 3); // Total weight of the order
-            $table->enum('status', ['Yangi', 'Avto keldi', 'completed']); // Order status
+            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');  // User who created the order
+            $table->foreignId('client_id')->constrained('customers')->onDelete('cascade');  // Client ID
+            $table->string('total_price', );  // Total price of the order
+            $table->string('total_weight',);  // Total weight of the order
+            $table->string('status');
             $table->timestamps();
         });
     }

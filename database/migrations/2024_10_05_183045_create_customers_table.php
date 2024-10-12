@@ -16,6 +16,7 @@ return new class extends Migration
             $table->string('name');
             $table->string('phone')->unique();
             $table->string('company')->nullable();
+            $table->string('vehicle_number')->nullable();  // Vehicle number for delivery
             $table->timestamps();
         });
     }

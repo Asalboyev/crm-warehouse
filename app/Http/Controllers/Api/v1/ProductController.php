@@ -9,6 +9,7 @@ use App\Models\Category;
 
 class ProductController extends Controller
 {
+    // Fetch products with search and category filters
     public function index(Request $request)
     {
         $search = $request->input('search');
@@ -20,8 +21,7 @@ class ProductController extends Controller
         // Query products and apply filters
         $products = Product::query()
             ->when($search, function ($query, $search) {
-                return $query->where('product_name', 'like', "%{$search}%")
-                    ->orWhere('phone', 'like', "%{$search}%");
+                return $query->where('product_name', 'like', "%{$search}%");
             })
             ->when($category_id, function ($query, $category_id) {
                 // Filter products by the selected category
@@ -30,29 +30,14 @@ class ProductController extends Controller
             ->latest()
             ->paginate(10);
 
-        return view('admin.product.index', compact('products', 'categories', 'search', 'category_id'));
-    }
-    public function create()
-    {
-        $categories = Category::query()->get();
-        return view('admin.product.create', compact('categories'));
-    }
-
-
-    // Store a new product
-    public function store(Request $request)
-    {
-
-        $product = Product::create($request->all());
-
-        return response()->json(['message' => 'Product created successfully', 'product' => $product]);
+        return response()->json(compact('products', 'categories', 'search', 'category_id'));
     }
 
     // View product details (with stock and pricing)
     public function show($id)
     {
         $product = Product::findOrFail($id);
-        return view('product.show', compact('product'));
+        return response()->json(compact('product'));
     }
 
     // Add packages to stock
@@ -61,30 +46,18 @@ class ProductController extends Controller
         $product = Product::findOrFail($id);
 
         // Add the number of packages and recalculate total weight
-        $product->total_packages += $request->input('package_count');
-        $product->total_weight += $request->input('package_count') * $product->package_weight;
+        $product->items_per_package += $request->input('items_per_package');
+        $product->total_units += $request->input('total_units');
+        $product->total_packages += $request->input('total_packages');
+        $product->total_weight += $request->input('total_weight');
+//        $product->total_weight += $request->input('package_count') * $product->package_weight;
 
         $product->save();
 
         return response()->json(['message' => 'Packages added', 'product' => $product]);
     }
 
-    // Add individual items (outside packages) to stock
-    public function addItem(Request $request, $id)
-    {
-        $product = Product::findOrFail($id);
-
-        // Add individual items and update total weight
-        $itemsToAdd = $request->input('items_count');
-        $product->items_in_package += $itemsToAdd;
-        $product->total_weight += $itemsToAdd * $product->weight_per_meter;
-
-        $product->save();
-
-        return response()->json(['message' => 'Items added', 'product' => $product]);
-    }
-
-    // Edit product prices dynamically
+    // Update product prices
     public function updatePrice(Request $request, $id)
     {
         $product = Product::findOrFail($id);
