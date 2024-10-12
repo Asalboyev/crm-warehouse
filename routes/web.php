@@ -4,9 +4,11 @@ use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AgentController;
-use App\Http\Controllers\MainController;
 use App\Http\Controllers\Backend\CategoriesController;
 use App\Http\Controllers\Backend\CustomerController;
+use App\Http\Controllers\Backend\MainController;
+use App\Http\Controllers\Backend\ProductController;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -35,13 +37,9 @@ Route::middleware('auth')->group(function () {
 });
 require __DIR__.'/auth.php';
 
-//     Admin group middleware
 Route::middleware(['auth','role:admin'])->group(function () {
-    //  dashboard
-    Route::get('dashboard', [AdminController::class, 'AdminDashboard'])->name('dashboard');
-    // end dashboard
 
-    // users
+    Route::get('dashboard', [MainController::class, 'getCustomerStats'])->name('dashboard');
     Route::get('users', [AdminController::class, 'users'])->name('users');
     Route::post('users', [AdminController::class, 'users_create'])->name('users.create');
     Route::get('user/{id}/edit', [AdminController::class, 'users_edit'])->name('user.edit');
@@ -57,6 +55,18 @@ Route::middleware(['auth','role:admin'])->group(function () {
     Route::delete('category/{id}/destroy', [CategoriesController::class, 'destroy'])->name('category.destroy');
     Route::post('/categories_ajax',[CategoriesController::class,'ajax'])->name('categories.ajax');
     // end categories
+
+    Route::get('products', [ProductController::class, 'index'])->name('product.index');
+    Route::get('product/create', [ProductController::class, 'create'])->name('product.create');
+    Route::get('/product/{id}/show', [ProductController::class, 'show'])->name('product.show');
+    Route::post('/product/store', [ProductController::class, 'store'])->name('product.store');
+    Route::get('/product/{id}/edit', [ProductController::class, 'edit'])->name('product.edit');
+    Route::put('/product/{id}', [ProductController::class, 'update'])->name('product.update');
+    Route::delete('product/{id}/destroy', [ProductController::class, 'destroy'])->name('product.destroy');
+
+    Route::put('/product/{id}/update-price', [ProductController::class, 'updatePrice'])->name('product.updatePrice');
+    Route::put('product/{id}/add-package', [ProductController::class, 'addPackage'])->name('product.addPackage');
+    Route::post('/product/{id}/add-item', [ProductController::class, 'addItem'])->name('product.addItem');
     // customers
     Route::get('customers', [CustomerController::class, 'index'])->name('customers.index');
     Route::post('customers',[CustomerController::class, 'store'])->name('customers.store');
@@ -74,6 +84,32 @@ Route::middleware(['auth','role:warehouseman'])->group(function () {
 });
 
 Route::get('/admin/login', [AdminController::class, 'AdminLogin'])->name('admin.login');
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

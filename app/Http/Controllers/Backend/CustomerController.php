@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Backend;
 
 use App\Http\Controllers\Controller;
+use App\Models\Category;
 use App\Models\Customer;
 use Illuminate\Http\Request;
 
@@ -22,6 +23,9 @@ class CustomerController extends Controller
 
         return view('admin.customers.index', compact('customers', 'search'));
     }
+
+
+
     public function store(Request $request)
     {
         // Foydalanuvchi ma'lumotlarini tasdiqlash

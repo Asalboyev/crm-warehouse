@@ -31,14 +31,17 @@ Route::prefix('v1')->group(function () {
 
 
 
+
     Route::middleware(['auth:sanctum', 'role:admin,seller'])->group(function () {
         Route::get('customers', [CustomersController::class, 'apiIndex'])->name('api.customers.index');
         Route::get('customer/{id}', [CustomersController::class, 'apiShow'])->name('api.customer.show');
         Route::post('customers', [CustomersController::class, 'apiStore'])->name('api.customers.store');
         Route::post('customer/{id}', [CustomersController::class, 'apiUpdate'])->name('api.customer.update');
-        Route::delete('customer/{id}', [CustomersController::class, 'apiDestroy'])->name('api.customer.destroy');
-    });
+        Route::middleware(['auth:sanctum', 'role:admin,'])->group(function () {
+            Route::delete('customer/{id}', [CustomersController::class, 'apiDestroy'])->name('api.customer.destroy');
+        });
 
+    });
 
 
 
