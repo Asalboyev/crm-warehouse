@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Product;
 use Illuminate\Http\Request;
 use App\Models\Category;
+use App\Models\OrderProduct;
 
 class ProductController extends Controller
 {
@@ -75,10 +76,10 @@ class ProductController extends Controller
 
         // Umumiy donalar sonini hisoblash
         $total_units = $validatedData['items_per_package']; // Faqat bitta poshka qo'shilsa
-        if (isset($input['items_per_package'])) {
-            $total_units *= $input['items_per_package']; // Poshkalar soni mavjud bo'lsa, hisoblaymiz
+        if (isset($input['packages_count'])) {
+            $total_units *= $input['packages_count']; // Faqat poshkalar soni bo'yicha ko'paytirish
         } else {
-            $total_units = 10; // Agar poshkalar soni kiritilmagan bo'lsa
+            $total_units = $validatedData['items_per_package']; // Poshkalar kiritilmagan bo'lsa, alohida bo'ladi
         }
 
         // Yangi mahsulot ma'lumotlariga total_units ni qo'shamiz
@@ -89,35 +90,72 @@ class ProductController extends Controller
 
         return redirect()->route('product.index')->with('message', 'Product created successfully!');
     }
+
     public function show($id)
     {
+        // Fetch all categories
         $categories = Category::query()->get();
+
+        // Fetch the product by ID
         $product = Product::find($id);
         if (!$product) {
             return redirect()->route('product.index')->with('error', 'Product not found!');
         }
-        return view('admin.product.show', compact('product','categories'));
+
+        // Fetch sales details for the specific product
+        $salesDetails = OrderProduct::with(['order.user', 'order.client'])
+            ->where('product_id', $id)
+            ->get()
+            ->map(function ($orderProduct) {
+                // Check if the order exists
+                $order = $orderProduct->order;
+
+                return [
+                    'order_id' => $order ? $order->id : null, // Include order ID
+                    'sold_to_id' => $order ? optional($order->client)->id : null, // Client ID
+                    'sold_to' => $order ? optional($order->client)->name : 'N/A', // Client name, default to 'N/A'
+                    'sold_to_phone' => $order ? optional($order->client)->phone : 'N/A', // Client phone, default to 'N/A'
+                    'sold_by_id' => $order ? optional($order->user)->id : null,   // Seller ID
+                    'sold_by' => $order ? optional($order->user)->name : 'N/A',   // Seller name, default to 'N/A'
+                    'sold_by_phone' => $order ? optional($order->user)->email : 'N/A', // Seller phone, default to 'N/A'
+                    'times_sold' => $orderProduct->times_sold,
+                    'quantity_pochka' => $orderProduct->quantity_pochka,
+                    'quantity_dona' => $orderProduct->quantity_dona,
+                    'total_quantity' => $orderProduct->quantity_pochka + $orderProduct->quantity_dona, // Total quantity sold
+                ];
+            });
+
+        // Pass the product and sales details to the view
+        return view('admin.product.show', compact('product', 'categories', 'salesDetails'));
     }
+
 
 // View product details (with stock and pricing)
 
 
     // Add packages to stock
-    public function addPackage(Request $request, $id)
-    {
-        $product = Product::findOrFail($id);
+//    public function addPackage(Request $request, $id)
+//    {
+//        $product = Product::findOrFail($id);
+//
+//        // items_per_package is updated directly with user input
+//        $product->items_per_package = $request->input('items_per_package');
+//
+//        // total_units is updated with user input, no automatic calculation
+//        $product->total_units = $request->input('total_units');
+//
+//        // Other fields are updated as usual
+//        $product->total_packages += $request->input('total_packages');
+//        $product->total_weight += $request->input('total_weight');
+//
+//        $product->save();
+//
+//        return redirect()->route('product.index')->with('message', 'Mahsulot qoldiqlar qoshildi');
+//    }
 
-        // Add the number of packages and recalculate total weight
-        $product->items_per_package += $request->input('items_per_package');
-        $product->total_units += $request->input('total_units');
-        $product->total_packages += $request->input('total_packages');
-        $product->total_weight += $request->input('total_weight');
-//        $product->total_weight += $request->input('package_count') * $product->package_weight;
 
-        $product->save();
 
-        return redirect()->route('product.index')->with('message', 'Mahsulot qoldiqlar qoshildi ');
-    }
+
     public function edit($id)
     {
         $categories = Category::query()->get();

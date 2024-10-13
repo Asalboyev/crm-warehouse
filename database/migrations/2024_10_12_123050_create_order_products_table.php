@@ -14,11 +14,17 @@ return new class extends Migration
         Schema::create('order_products', function (Blueprint $table) {
             $table->id();
             $table->foreignId('order_id')->constrained('orders')->onDelete('cascade');
-            $table->foreignId('product_id')->constrained('products')->onDelete('cascade');
-            $table->integer('quantity');  // Quantity of products ordered
-            $table->string('price_per_item',);  // Price of the product at the time of order
-            $table->string('total_weight',);  // Total weight of the ordered product
-            $table->string('total_price', );  // Total price for this product in the order
+            $table->foreignId('product_id')->constrained('products');
+            $table->integer('quantity_pochka'); // Quantity in Pochka (package)
+            $table->integer('quantity_dona');   // Quantity in individual units
+            $table->decimal('price_per_ton', 10, 2);  // Price per ton for this order
+            $table->decimal('price_per_unit', 10, 2); // Price per unit for this order
+            $table->decimal('total_price', 10, 2);    // Total price for this item
+            $table->decimal('total_weight', 10, 3);   // Total weight for this item
+            $table->integer('times_sold')->default(1); // Track how many times sold
+            $table->boolean('is_returned')->default(false); // Track if the product was returned
+            $table->foreignId('sold_by_user_id')->constrained('users'); // This line should be here
+
             $table->timestamps();
         });
     }

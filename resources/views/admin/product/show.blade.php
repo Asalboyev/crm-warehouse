@@ -123,11 +123,53 @@
         }
 
         .operations button:hover {
-            background-color: #0056b3;
+            background-color: #009ef7;
         }
         .hidden {
             display: none;
         }
+        .sales-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 16px;
+            text-align: left;
+        }
+
+        .sales-table thead {
+            background-color: #f2f2f2;
+        }
+
+        .sales-table th, .sales-table td {
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+        }
+
+        .sales-table tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        .sales-table tr:hover {
+            background-color: #f1f1f1;
+        }
+
+        .sales-table th {
+            background-color: #009ef7;
+            color: white;
+            text-transform: uppercase;
+        }
+
+        .sales-history h2 {
+            font-size: 24px;
+            margin-bottom: 10px;
+            color: #333;
+            font-weight: 600;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
 
     </style>
 @endsection
@@ -191,18 +233,42 @@
 {{--            <button class="tab">Mahsulot aylanmasi</button>--}}
         </div>
 
-        <div id="sales-history" class="sales-history hidden">
+        <div id="sales-history" class="sales-history">
             <h2>Sotuv tarixi</h2>
-            <table>
+            <table class="sales-table">
                 <thead>
                 <tr>
+                    <th>Order ID</th>
                     <th>Nechi marta sotilgan</th>
                     <th>Seller</th>
                     <th>Buyer</th>
                 </tr>
                 </thead>
                 <tbody id="sales-history-content">
-                <!-- Sales data will be inserted here -->
+                @if ($salesDetails->isEmpty())
+                    <tr>
+                        <td colspan="4" class="text-center">Sotuv tarixi mavjud emas.</td>
+                    </tr>
+                @else
+                    @foreach ($salesDetails as $sale)
+                        <tr>
+                            <td>{{ $sale['order_id'] }}</td>
+                            <td>{{ $sale['times_sold'] }}</td>
+                            <!-- Seller details -->
+                            <td>
+                                <strong>ID:</strong> {{ $sale['sold_by_id'] ?? 'N/A' }} <br>
+                                <strong>Name:</strong> {{ $sale['sold_by'] }} <br>
+                                <strong>Email:</strong> {{ $sale['sold_by_phone'] }}
+                            </td>
+                            <!-- Buyer details -->
+                            <td>
+                                <strong>ID:</strong> {{ $sale['sold_to_id'] ?? 'N/A' }} <br>
+                                <strong>Name:</strong> {{ $sale['sold_to'] }} <br>
+                                <strong>Phone:</strong> {{ $sale['sold_to_phone'] }}
+                            </td>
+                        </tr>
+                    @endforeach
+                @endif
                 </tbody>
             </table>
         </div>

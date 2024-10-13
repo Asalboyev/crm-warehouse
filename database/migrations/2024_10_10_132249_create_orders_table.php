@@ -15,9 +15,11 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');  // User who created the order
             $table->foreignId('client_id')->constrained('customers')->onDelete('cascade');  // Client ID
-            $table->string('total_price', );  // Total price of the order
-            $table->string('total_weight',);  // Total weight of the order
+            $table->decimal('total_price', 10, 2);  // Total price of the order
+            $table->decimal('total_weight', 10, 3);  // Total weight of the order
+            $table->string('car_number')->nullable();  // Nullable car number if needed
             $table->string('status');
+            $table->boolean('zayafka')->default(0); // Set default to 0 or 1 based on your logic
             $table->timestamps();
         });
     }

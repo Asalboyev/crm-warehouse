@@ -39,6 +39,36 @@ class ProductController extends Controller
         $product = Product::findOrFail($id);
         return response()->json(compact('product'));
     }
+    public function getSklad($id)
+    {
+
+        try {
+            // Find the product by ID
+            $product = Product::find($id);
+
+            // If product not found, return a 404 response
+            if (!$product) {
+                return response()->json(['message' => 'Product not found'], 404);
+            }
+
+            // Return the stock details (sklad) of the product
+            return response()->json([
+                'product_id' => $product->id,
+                'name' => $product->name,
+                'available_stock_pochka' => $product->items_per_package, // Stock for pochka
+                'available_stock_dona' => $product->total_units, // Stock for individual units (dona)
+                'bron_package' => $product->bron_package, // Reserved pochka
+                'bron_one_pc' => $product->bron_one_pc, // Reserved individual units
+                'price_per_package' => $product->price_per_package,
+                'price_per_item' => $product->price_per_item,
+                'price_per_ton' => $product->price_per_ton,
+            ], 200);
+        } catch (\Exception $e) {
+            // Log the error and return a 500 response
+            \Log::error('Failed to retrieve product stock: ' . $e->getMessage());
+            return response()->json(['message' => 'Failed to retrieve product stock: ' . $e->getMessage()], 500);
+        }
+    }
 
     // Add packages to stock
     public function addPackage(Request $request, $id)

@@ -40,6 +40,8 @@ require __DIR__.'/auth.php';
 Route::middleware(['auth','role:admin'])->group(function () {
 
     Route::get('dashboard', [MainController::class, 'getCustomerStats'])->name('dashboard');
+
+
     Route::get('users', [AdminController::class, 'users'])->name('users');
     Route::post('users', [AdminController::class, 'users_create'])->name('users.create');
     Route::get('user/{id}/edit', [AdminController::class, 'users_edit'])->name('user.edit');

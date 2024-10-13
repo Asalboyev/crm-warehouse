@@ -9,11 +9,13 @@ class Order extends Model
 {
     use HasFactory;
     protected $fillable = [
-        'client_id',
         'user_id',
+        'client_id',
         'total_price',
         'total_weight',
         'status',
+        'car_number',
+        'zayafka    '
     ];
 
 
@@ -22,17 +24,19 @@ class Order extends Model
     {
         return $this->hasMany(OrderProduct::class);
     }
-
-    // Define the relationship with the User (who created the order)
-    public function user()
+    public function user() // Who sold the product
     {
         return $this->belongsTo(User::class);
     }
 
-    // Define the relationship with the Client (who placed the order)
-    public function client()
+    public function client() // To whom it was sold
     {
-        return $this->belongsTo(Customer::class);
+        return $this->belongsTo(Customer::class, 'client_id');
     }
+
+
+
+    // Define the relationship with the Client (who placed the order)
+
 
 }
