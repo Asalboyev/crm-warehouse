@@ -15,15 +15,15 @@ return new class extends Migration
             $table->id();
             $table->foreignId('order_id')->constrained('orders')->onDelete('cascade');
             $table->foreignId('product_id')->constrained('products');
-            $table->integer('quantity_pochka'); // Quantity in Pochka (package)
-            $table->integer('quantity_dona');   // Quantity in individual units
+            $table->integer('quantity_pack'); // Quantity in Pochka (package)
+            $table->integer('quantity_piece');   // Quantity in individual units
             $table->decimal('price_per_ton', 10, 2);  // Price per ton for this order
             $table->decimal('price_per_unit', 10, 2); // Price per unit for this order
             $table->decimal('total_price', 10, 2);    // Total price for this item
             $table->decimal('total_weight', 10, 3);   // Total weight for this item
             $table->integer('times_sold')->default(1); // Track how many times sold
             $table->boolean('is_returned')->default(false); // Track if the product was returned
-            $table->foreignId('sold_by_user_id')->constrained('users'); // This line should be here
+            $table->foreignId('sold_by_user_id')->nullable()->constrained('users'); // This line should be here
 
             $table->timestamps();
         });

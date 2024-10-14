@@ -18,8 +18,8 @@ return new class extends Migration
             $table->decimal('total_price', 10, 2);  // Total price of the order
             $table->decimal('total_weight', 10, 3);  // Total weight of the order
             $table->string('car_number')->nullable();  // Nullable car number if needed
-            $table->string('status');
-            $table->boolean('zayafka')->default(0); // Set default to 0 or 1 based on your logic
+            $table->text('photos')->nullable();
+            $table->boolean('order_status')->default(0); // Set default to 0 or 1 based on your logic
             $table->timestamps();
         });
     }

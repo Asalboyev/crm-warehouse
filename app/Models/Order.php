@@ -15,7 +15,8 @@ class Order extends Model
         'total_weight',
         'status',
         'car_number',
-        'zayafka    '
+        'order_status',
+        'photo'
     ];
 
 
@@ -24,6 +25,15 @@ class Order extends Model
     {
         return $this->hasMany(OrderProduct::class);
     }
+    public function orderImages()
+    {
+        return $this->hasMany(OrderImage::class);
+    }
+    public function statuses()
+    {
+        return $this->belongsToMany(Status::class);
+    }
+
     public function user() // Who sold the product
     {
         return $this->belongsTo(User::class);

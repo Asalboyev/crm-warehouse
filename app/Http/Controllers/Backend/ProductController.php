@@ -134,24 +134,24 @@ class ProductController extends Controller
 
 
     // Add packages to stock
-//    public function addPackage(Request $request, $id)
-//    {
-//        $product = Product::findOrFail($id);
-//
-//        // items_per_package is updated directly with user input
-//        $product->items_per_package = $request->input('items_per_package');
-//
-//        // total_units is updated with user input, no automatic calculation
-//        $product->total_units = $request->input('total_units');
-//
-//        // Other fields are updated as usual
-//        $product->total_packages += $request->input('total_packages');
-//        $product->total_weight += $request->input('total_weight');
-//
-//        $product->save();
-//
-//        return redirect()->route('product.index')->with('message', 'Mahsulot qoldiqlar qoshildi');
-//    }
+    public function addPackage(Request $request, $id)
+    {
+        $product = Product::findOrFail($id);
+
+        // items_per_package is updated directly with user input
+        $product->items_per_package = $request->input('items_per_package');
+
+        // total_units is updated with user input, no automatic calculation
+        $product->total_units = $request->input('total_units');
+
+        // Other fields are updated as usual
+        $product->total_packages += $request->input('total_packages');
+        $product->total_weight += $request->input('total_weight');
+
+        $product->save();
+
+        return redirect()->route('product.index')->with('message', 'Mahsulot qoldiqlar qoshildi');
+    }
 
 
 

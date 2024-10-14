@@ -15,8 +15,8 @@ class OrderProduct extends Model
     protected $fillable = [
         'order_id',
         'product_id',
-        'quantity_pochka',
-        'quantity_dona',
+        'quantity_pack',
+        'quantity_piece',
         'price_per_ton',
         'price_per_unit',
         'total_price',

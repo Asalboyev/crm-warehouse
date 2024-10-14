@@ -18,7 +18,28 @@ return new class extends Migration
             $table->timestamps();
         });
         DB::table('statuses')->insert([
+            'name' => 'Ariza holatida',
+        ]);
+        DB::table('statuses')->insert([
             'name' => 'Yangi',
+        ]);
+        DB::table('statuses')->insert([
+            'name' => 'Avto keldi',
+        ]);
+        DB::table('statuses')->insert([
+            'name' => 'Avto kirdi',
+        ]);
+        DB::table('statuses')->insert([
+            'name' => 'Yakunlandi',
+        ]);
+        DB::table('statuses')->insert([
+            'name' => 'Qarz',
+        ]);
+        DB::table('statuses')->insert([
+            'name' => 'Bekor qilindi',
+        ]);
+         DB::table('statuses')->insert([
+             'name' => 'Chiqib ketti',
         ]);
     }
 
