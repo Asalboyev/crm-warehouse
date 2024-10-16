@@ -17,7 +17,7 @@ class Role
     public function handle($request, Closure $next, ...$roles)
     {
         if (!Auth::check()) {
-            return redirect('/login');
+            return response()->json(['error' => 'Token hato'], 401);
         }
 
         $user = Auth::user();
