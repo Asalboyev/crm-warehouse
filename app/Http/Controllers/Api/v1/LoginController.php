@@ -8,45 +8,43 @@ use Illuminate\Support\Facades\Auth;
 class LoginController extends Controller
 {
     public function login(Request $request)
-    {
-        $credentials = $request->validate([
-            'email' => 'required|string|email',
-            'password' => 'required|string',
-        ]);
+{
+    $credentials = $request->validate([
+        'email' => 'required|string|email',
+        'password' => 'required|string',
+    ]);
 
-        // Agar login ma'lumotlari to'g'ri bo'lsa
-        if (Auth::attempt($credentials)) {
-            $user = Auth::user();
-            $role = $user->role; // Foydalanuvchi roli
+    // Login ma'lumotlari to'g'ri bo'lsa
+    if (Auth::attempt($credentials)) {
+        $user = Auth::user();
 
-            // Rollar bo'yicha yo'naltirish
-            $url = '';
-            if ($role === 'admin') {
-                $url = 'dashboard';
-            } elseif ($role === 'seller') {
-                $url = 'seller/dashboard';
-            } elseif ($role === 'guard') {
-                $url = 'guard/dashboard';
-            } elseif ($role === 'warehouseman') {
-                $url = 'warehouseman/dashboard';
-            } elseif ($role === 'user') {
-                $url = 'user/dashboard';
-            } else {
-                // Roli aniqlanmagan bo'lsa, 403 xatolik qaytarish
-                return response()->json(['message' => 'Sizda ushbu sahifaga kirish uchun ruxsat yo\'q.'], 403);
-            }
+        // Eski tokenlarni o'chirish
+        $user->tokens()->delete();
 
-            // Token yaratish va foydalanuvchini URLga yo'naltirish
+        // Yangi token yaratish
+        try {
             $token = $user->createToken('YourAppName')->plainTextToken;
-            return response()->json([
-                'token' => $token,
-                'redirect_url' => url($url)
-            ]);
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Token yaratishda xatolik'], 401);
         }
 
-        // Login xatolik bo'lsa Unauthorized xabari
-        return response()->json(['message' => 'Unauthorized'], 401);
+        // Userning rolini olish (agar bir role bo'lsa)
+        $role = $user->role ?? 'No role';  // Agar ko'plik bo'lsa, array bo'lishi mumkin
+
+        // Agar userda ko'p rollar bo'lsa (many-to-many)
+        // $roles = $user->roles->pluck('name');
+
+        return response()->json([
+            'token' => $token,
+            'role' => $role, // Yoki ko'p rollar bo'lsa: 'roles' => $roles
+            'redirect_url' => url('dashboard')
+        ]);
     }
+
+    // Agar login xato bo'lsa Unauthorized
+    return response()->json(['message' => 'Unauthorized'], 401);
+}
+
 
     public function logout(Request $request)
     {

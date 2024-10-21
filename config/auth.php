@@ -40,6 +40,12 @@ return [
             'driver' => 'session',
             'provider' => 'users',
         ],
+
+        'api' => [
+            'driver' => 'token',  // Or 'sanctum', 'passport', or 'jwt' depending on your setup
+            'provider' => 'users',
+            'hash' => false,
+        ],
     ],
 
     /*
@@ -64,12 +70,8 @@ return [
             'driver' => 'eloquent',
             'model' => App\Models\User::class,
         ],
-
-        // 'users' => [
-        //     'driver' => 'database',
-        //     'table' => 'users',
-        // ],
     ],
+
 
     /*
     |--------------------------------------------------------------------------
