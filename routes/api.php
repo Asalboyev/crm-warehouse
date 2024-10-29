@@ -7,6 +7,8 @@ use App\Http\Controllers\Api\v1\LoginController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Api\v1\OrderController;
 use App\Http\Controllers\Api\v1\ProductController;
+use Laravel\Passport\Passport;
+
 
 
 
@@ -25,7 +27,9 @@ use App\Http\Controllers\Api\v1\ProductController;
 
 
 Route::prefix('v1')->group(function () {
+
     Route::post('login', [LoginController::class, 'login']);
+    Route::post('refresh', [LoginController::class, 'refresh']);
     Route::post('logout', [LoginController::class, 'logout'])->middleware('auth:sanctum');
     Route::middleware(['auth:sanctum', 'role:admin,seller'])->group(function () {
         Route::get('customers', [CustomersController::class, 'apiIndex'])->name('api.customers.index');
