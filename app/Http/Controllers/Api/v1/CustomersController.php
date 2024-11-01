@@ -24,11 +24,19 @@ class CustomersController extends Controller
         return response()->json($customers);
     }
 
-    public function me($id)
+    public function me($id = null)
     {
-        $user = User::findOrFail($id);
-        return response()->json($user);
+        if ($id) {
+            // Return the specific user if an ID is provided
+            $user = User::findOrFail($id);
+            return response()->json($user);
+        } else {
+            // Return all users if no ID is provided
+            $users = User::all();
+            return response()->json($users);
+        }
     }
+
     public function apiShow($id)
     {
         $customer = Customer::findOrFail($id);
