@@ -45,32 +45,32 @@ class LoginController extends Controller
 
 
 
-public function refresh(Request $request)
-    {
-        $refreshToken = $request->input('refresh_token');
+    public function refresh(Request $request)
+        {
+            $refreshToken = $request->input('refresh_token');
 
-        // Hash the incoming refresh token
-        $hashedRefreshToken = hash('sha256', $refreshToken);
+            // Hash the incoming refresh token
+            $hashedRefreshToken = hash('sha256', $refreshToken);
 
-        // Look for the hashed token in the database
-        $userToken = DB::table('personal_access_tokens')->where('token', $hashedRefreshToken)->first();
+            // Look for the hashed token in the database
+            $userToken = DB::table('personal_access_tokens')->where('token', $hashedRefreshToken)->first();
 
-        if (!$userToken) {
-            return response()->json(['message' => 'Invalid refresh token'], 401);
+            if (!$userToken) {
+                return response()->json(['message' => 'Invalid refresh token'], 401);
+            }
+
+            // Get the user associated with the refresh token
+            $user = User::find($userToken->tokenable_id);
+
+            // Create a new access token
+            $accessToken = $user->createToken('access_token')->plainTextToken; // Create new access token
+
+            return response()->json([
+                'access_token' => $accessToken, // Return new access token
+                'role' => $user->role ?? 'No role',
+                'redirect_url' => url('dashboard'),
+            ]);
         }
-
-        // Get the user associated with the refresh token
-        $user = User::find($userToken->tokenable_id);
-
-        // Create a new access token
-        $accessToken = $user->createToken('access_token')->plainTextToken; // Create new access token
-
-        return response()->json([
-            'access_token' => $accessToken, // Return new access token
-            'role' => $user->role ?? 'No role',
-            'redirect_url' => url('dashboard'),
-        ]);
-    }
 
     // Method to log out the user and delete all tokens
     public function logout(Request $request)

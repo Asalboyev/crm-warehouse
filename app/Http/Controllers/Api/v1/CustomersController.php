@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\v1;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Customer;
+use App\Models\User;
 
 class CustomersController extends Controller
 {
@@ -23,6 +24,11 @@ class CustomersController extends Controller
         return response()->json($customers);
     }
 
+    public function me($id)
+    {
+        $user = User::findOrFail($id);
+        return response()->json($user);
+    }
     public function apiShow($id)
     {
         $customer = Customer::findOrFail($id);
