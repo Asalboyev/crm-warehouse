@@ -30,9 +30,11 @@ Route::prefix('v1')->group(function () {
 
     Route::post('login', [LoginController::class, 'login']);
     Route::post('refresh', [LoginController::class, 'refresh']);
-    Route::get('profile/{id?}', [CustomersController::class, 'me']);
     Route::post('logout', [LoginController::class, 'logout'])->middleware('auth:sanctum');
     Route::middleware(['auth:sanctum', 'role:admin,seller'])->group(function () {
+
+        Route::get('profile', [CustomersController::class, 'me']);
+
         Route::get('customers', [CustomersController::class, 'apiIndex'])->name('api.customers.index');
         Route::get('customer/{id}', [CustomersController::class, 'apiShow'])->name('api.customer.show');
         Route::post('customers', [CustomersController::class, 'apiStore'])->name('api.customers.store');

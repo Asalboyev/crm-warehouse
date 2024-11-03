@@ -24,18 +24,21 @@ class CustomersController extends Controller
         return response()->json($customers);
     }
 
-    public function me($id = null)
+
+
+    public function me()
     {
-        if ($id) {
-            // Return the specific user if an ID is provided
-            $user = User::findOrFail($id);
-            return response()->json($user);
-        } else {
-            // Return all users if no ID is provided
-            $users = User::all();
-            return response()->json($users);
+        $user = auth()->user();
+
+        if (!$user) {
+            return response()->json(['error' => 'User not authenticated'], 401);
         }
+
+        return response()->json($user);
     }
+
+
+
 
     public function apiShow($id)
     {
