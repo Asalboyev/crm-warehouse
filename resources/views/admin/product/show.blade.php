@@ -225,152 +225,234 @@
 
     </div>
 
-    <div class="container">
+    <div class="post d-flex flex-column-fluid" id="kt_post">
+        <div id="kt_content_container" class="container-xxl">
+            <!-- <form id="kt_ecommerce_add_product_form" class="form d-flex flex-column flex-lg-row fv-plugins-bootstrap5 fv-plugins-framework" data-kt-redirect="../../demo1/dist/apps/ecommerce/catalog/products.html"> -->
+            <div class="d-flex flex-column flex-row-fluid gap-7 gap-lg-10">
+                <!--begin:::Tabs-->
+                <ul class="nav nav-custom nav-tabs nav-line-tabs nav-line-tabs-2x border-0 fs-4 fw-bold mb-n2">
+                    <!--begin:::Tab item-->
+                    <li class="nav-item">
+                        <a class="nav-link text-active-primary pb-4 active" data-bs-toggle="tab"
+                            href="#kt_ecommerce_add_product_general">Mahsulot haqida</a>
+                    </li>
+                    <!--end:::Tab item-->
+                    <!--begin:::Tab item-->
+                    <li class="nav-item">
+                        <a class="nav-link text-active-primary pb-4" data-bs-toggle="tab"
+                            href="#kt_ecommerce_add_product_advanced">Sotuv tarixi</a>
+                    </li>
+                    <!--end:::Tab item-->
+                </ul>
+                <!--end:::Tabs-->
+                <!--begin::Tab content-->
+                <div class="tab-content">
+                    <!--begin::Tab pane-->
+                    <div class="tab-pane fade active show" id="kt_ecommerce_add_product_general" role="tab-panel">
+                        <div class="d-flex flex-column gap-7 gap-lg-10">
+                            <!--begin::General options-->
+                            <div class="card card-flush py-4">
+                                <!--begin::Card header-->
+                                <div class="card-header">
+                                    <!-- <div class="card-title">
+                                        <h2>General</h2>
+                                    </div> -->
+                                </div>
+                                <!--end::Card header-->
+                                <!--begin::Card body-->
+                                <div class="card-body pt-0">
+                                    <div class="product-info">
 
-        <div class="tabs">
-            <button class="tab active">Mahsulot haqida</button>
-            <button class="tab">Sotuv tarixi</button>
-{{--            <button class="tab">Mahsulot aylanmasi</button>--}}
-        </div>
+                                        <div class="info-section">
+                                            <div class="info-column">
+                                                <h3>Umumiy ma'lumotlar</h3>
+                                                <p><strong>Mahsulot nomi:</strong> {{$product->product_name}}</p>
+                                                <p><strong>Kategoriya:</strong> {{$product->category->name}}</p>
+                                                <!-- Assuming you have a relationship for category -->
+                                                <p><strong>Davlat:</strong> {{$product->country}}</p>
+                                                <p><strong>Qalinligi:</strong> {{$product->thickness}} mm</p>
+                                                <p><strong>Uzunligi:</strong> {{$product->length}} Metr</p>
+                                                <p><strong>Metal turi:</strong> {{$product->metal_type}}</p>
+                                            </div>
+                                            <div class="info-column">
+                                                <h3>Parametrlar</h3>
+                                                <p><strong>1 tonna narxi:</strong> {{$product->price_per_ton}} $</p>
+                                                <p><strong>1 tonna uzunligi:</strong> {{$product->length_per_ton}} metr</p>
+                                                <p><strong>1 metr uchun narx:</strong> {{$product->price_per_meter}} $</p>
+                                                <p><strong>1 dona uchun narx:</strong> {{$product->price_per_item}} $</p>
+                                                <p><strong>1 pochka narxi:</strong> {{$product->price_per_package}} $</p>
+                                            </div>
+                                            <div class="info-column">
+                                                <h3>Qiymaatlari</h3>
 
-        <div id="sales-history" class="sales-history">
-            <h2>Sotuv tarixi</h2>
-            <table class="sales-table">
-                <thead>
-                <tr>
-                    <th>Order ID</th>
-                    <th>Nechi marta sotilgan</th>
-                    <th>Seller</th>
-                    <th>Buyer</th>
-                </tr>
-                </thead>
-                <tbody id="sales-history-content">
-                @if ($salesDetails->isEmpty())
-                    <tr>
-                        <td colspan="4" class="text-center">Sotuv tarixi mavjud emas.</td>
-                    </tr>
-                @else
-                    @foreach ($salesDetails as $sale)
-                        <tr>
-                            <td>{{ $sale['order_id'] }}</td>
-                            <td>{{ $sale['times_sold'] }}</td>
-                            <!-- Seller details -->
-                            <td>
-                                <strong>ID:</strong> {{ $sale['sold_by_id'] ?? 'N/A' }} <br>
-                                <strong>Name:</strong> {{ $sale['sold_by'] }} <br>
-                                <strong>Email:</strong> {{ $sale['sold_by_phone'] }}
-                            </td>
-                            <!-- Buyer details -->
-                            <td>
-                                <strong>ID:</strong> {{ $sale['sold_to_id'] ?? 'N/A' }} <br>
-                                <strong>Name:</strong> {{ $sale['sold_to'] }} <br>
-                                <strong>Phone:</strong> {{ $sale['sold_to_phone'] }}
-                            </td>
-                        </tr>
-                    @endforeach
-                @endif
-                </tbody>
-            </table>
-        </div>
-        <div class="product-info">
-            <h2>Mahsulot haqida</h2>
+                                                @if($product->items_per_package)
+                                                <p><strong> pochkalar soni:</strong> {{$product->items_per_package}} ta</p>
+                                                @endif
 
-            <div class="info-section">
-                <div class="info-column">
-                    <h3>Umumiy ma'lumotlar</h3>
-                    <p><strong>Mahsulot nomi:</strong> {{$product->product_name}}</p>
-                    <p><strong>Kategoriya:</strong> {{$product->category->name}}</p> <!-- Assuming you have a relationship for category -->
-                    <p><strong>Davlat:</strong> {{$product->country}}</p>
-                    <p><strong>Qalinligi:</strong> {{$product->thickness}} mm</p>
-                    <p><strong>Uzunligi:</strong> {{$product->length}} Metr</p>
-                    <p><strong>Metal turi:</strong> {{$product->metal_type}}</p>
-                </div>
-                <div class="info-column">
-                    <h3>Parametrlar</h3>
-                    <p><strong>1 tonna narxi:</strong> {{$product->price_per_ton}} $</p>
-                    <p><strong>1 tonna uzunligi:</strong> {{$product->length_per_ton}} metr</p>
-                    <p><strong>1 metr uchun narx:</strong> {{$product->price_per_meter}} $</p>
-                    <p><strong>1 dona uchun narx:</strong> {{$product->price_per_item}} $</p>
-                    <p><strong>1 pochka narxi:</strong> {{$product->price_per_package}} $</p>
-                </div>
-                <div class="info-column">
-                    <h3>Qiymaatlari</h3>
+                                                @if($product->total_units)
+                                                <p><strong>umumi donalar soni:</strong> {{$product->total_units}} ta</p>
+                                                @endif
+                                                @if($product->package_weight)
+                                                <p><strong>1 pochkaning og'irligi:</strong> {{$product->package_weight}} Tonna</p>
+                                                @endif
 
-                    @if($product->items_per_package)
-                        <p><strong> pochkalar soni:</strong> {{$product->items_per_package}} ta</p>
-                    @endif
+                                                @if($product->package_length)
+                                                <p><strong>1 pochka uzunligi:</strong> {{$product->package_length}} metr</p>
+                                                @endif
 
-                    @if($product->total_units)
-                        <p><strong>umumi donalar soni:</strong> {{$product->total_units}} ta</p>
-                    @endif
-                    @if($product->package_weight)
-                        <p><strong>1 pochkaning og'irligi:</strong> {{$product->package_weight}} Tonna</p>
-                    @endif
+                                                @if($product->weight_per_meter)
+                                                <p><strong>1 metr og'irligi:</strong> {{$product->weight_per_meter}} tonna</p>
+                                                @endif
 
-                    @if($product->package_length)
-                        <p><strong>1 pochka uzunligi:</strong> {{$product->package_length}} metr</p>
-                    @endif
+                                                @if($product->weight_per_item)
+                                                <p><strong>1 dona og'irligi:</strong> {{$product->weight_per_item}} tonna</p>
+                                                @endif
 
-                    @if($product->weight_per_meter)
-                        <p><strong>1 metr og'irligi:</strong> {{$product->weight_per_meter}} tonna</p>
-                    @endif
+                                                @if($product->grains_package)
+                                                <p><strong>Donalarning pochkadagi soni:</strong> {{$product->grains_package}} ta</p>
+                                                @endif
 
-                    @if($product->weight_per_item)
-                        <p><strong>1 dona og'irligi:</strong> {{$product->weight_per_item}} tonna</p>
-                    @endif
+                                                @if($product->total_packages)
+                                                <p><strong>Ombordagi jami pochkalar soni:</strong> {{$product->total_packages}} ta</p>
+                                                @endif
 
-                    @if($product->grains_package)
-                        <p><strong>Donalarning pochkadagi soni:</strong> {{$product->grains_package}} ta</p>
-                    @endif
+                                                @if($product->items_in_package)
+                                                <p><strong>Pochkadagi mavjud donalar soni:</strong> {{$product->items_in_package}} ta</p>
+                                                @endif
 
-                    @if($product->total_packages)
-                        <p><strong>Ombordagi jami pochkalar soni:</strong> {{$product->total_packages}} ta</p>
-                    @endif
+                                                @if($product->total_weight)
+                                                <p><strong>Jami og'irligi:</strong> {{$product->total_weight}} Tonna</p>
+                                                @endif
+                                            </div>
 
-                    @if($product->items_in_package)
-                        <p><strong>Pochkadagi mavjud donalar soni:</strong> {{$product->items_in_package}} ta</p>
-                    @endif
+                                        </div>
+                                        <div>
+                                            <h2>Qoldiq</h2>
+                                            <form id="product-form" action="{{ route('product.addPackage', $product->id) }}" method="POST"
+                                                enctype="multipart/form-data" class="stock-info">
+                                                @csrf
+                                                @method("PUT")
+                                                <div class="stock-details">
+                                                    <div>
+                                                        <label for="pochkalar">Pochkalar soni</label>
+                                                        <input name="items_per_package" type="text" id="pochkalar"
+                                                            value="{{$product->items_per_package}}">
+                                                    </div>
+                                                    <div>
+                                                        <label for="pochkada-dona">Pochkada donalar soni</label>
+                                                        <input type="text" name="total_packages" id="pochkada-dona"
+                                                            value="{{$product->total_packages}}">
+                                                    </div>
+                                                    <div>
+                                                        <label for="aloqida-dona">Alohida dona</label>
+                                                        <input type="text" name="total_units" id="aloqida-dona" value="{{$product->total_units}}">
+                                                    </div>
+                                                    <div>
+                                                        <label for="tonna">Umumiy Tonna</label>
+                                                        <input type="text" id="tonna" name="total_weight" value="{{$product->total_weight}}">
+                                                    </div>
+                                                </div>
 
-                    @if($product->total_weight)
-                        <p><strong>Jami og'irligi:</strong> {{$product->total_weight}} Tonna</p>
-                    @endif
+                                                <div class="operations">
+                                                    <button>Qo'shish </button>
+                                                </div>
+                                            </form>
+                                        </div>
+
+                                    </div>
+
+                                    <!--end::Input group-->
+                                </div>
+                                <!--end::Card header-->
+                            </div>
+                        </div>
+                    </div>
+                    <!--end::Tab pane-->
+                    <!--begin::Tab pane-->
+                    <div class="tab-pane fade" id="kt_ecommerce_add_product_advanced" role="tab-panel">
+                        <div class="d-flex flex-column gap-7 gap-lg-10">
+                            <!--begin::Inventory-->
+                            <div class="card card-flush py-4">
+                                <!--begin::Card header-->
+                                <div class="card-header">
+                                    <div class="card-title">
+                                        <h2>Inventory</h2>
+                                    </div>
+                                </div>
+                                <!--end::Card header-->
+                                <!--begin::Card body-->
+                                <div class="card-body pt-0">
+                                    <div class="card mb-5 mb-xl-8">
+                                        <!--begin::Header-->
+
+                                        <!--end::Header-->
+                                        <!--begin::Body-->
+                                        <div class="card-body py-3">
+                                            <!--begin::Table container-->
+                                            <div class="table-responsive">
+
+                                                <table class="table align-middle gs-0 gy-4">
+                                                    <thead>
+                                                    <tr>
+                                                        <th>Order ID</th>
+                                                        <th>Nechi marta sotilgan</th>
+                                                        <th>Seller</th>
+                                                        <th>Buyer</th>
+                                                    </tr>
+                                                    </thead>
+                                                    <tbody >
+                                                    @if ($salesDetails->isEmpty())
+                                                        <tr>
+                                                            <td colspan="4" class="text-center">Sotuv tarixi mavjud emas.</td>
+                                                        </tr>
+                                                    @else
+                                                        @foreach ($salesDetails as $sale)
+                                                            <tr>
+                                                                <td>  <span class="text-muted fw-bold text-muted d-block fs-7">{{ $sale['order_id'] }}</span></td>
+
+                                                                <td><span class="text-muted fw-bold text-muted d-block fs-7">{{ $sale['times_sold'] }}</span> </td>
+                                                                <!-- Seller details -->
+                                                                <!-- <td>
+                                                                    <strong>ID:</strong> {{ $sale['sold_by_id'] ?? 'N/A' }} <br>
+                                                                    <strong>Name:</strong> {{ $sale['sold_by'] }} <br>
+                                                                    <strong>Email:</strong> {{ $sale['sold_by_phone'] }}
+                                                                </td>
+                                                                <!-- Buyer details -->
+                                                                <td>
+                                                                    <span class="text-muted fw-bold text-muted d-block fs-7"><strong>ID:</strong> {{ $sale['sold_to_id'] ?? 'N/A' }} <br>
+                                                                        <strong>Name:</strong> {{ $sale['sold_to'] }} <br>
+                                                                        <strong>Phone:</strong> {{ $sale['sold_to_phone'] }}</span>
+                                                                </td>
+                                                                <td>
+                                                                    <strong>ID:</strong> {{ $sale['sold_to_id'] ?? 'N/A' }} <br>
+                                                                            <strong>Name:</strong> {{ $sale['sold_to'] }} <br>
+                                                                            <strong>Phone:</strong> {{ $sale['sold_to_phone'] }}
+                                                                        </td>
+                                                            </tr>
+                                                         @endforeach
+                                                    @endif
+                                                     </tbody>
+                                                 </table>
+                                                <!--end::Table-->
+                                            </div>
+                                            <!--end::Table container-->
+                                        </div>
+                                        <!--begin::Body-->
+                                    </div>
+
+
+                                </div>
+                                <!--end::Card header-->
+                            </div>
+                        </div>
+                    </div>
+                    <!--end::Tab pane-->
                 </div>
 
             </div>
-            <div>
-                <h2>Qoldiq</h2>
-                <form id="product-form" action="{{ route('product.addPackage', $product->id) }}" method="POST" enctype="multipart/form-data" class="stock-info">
-                    @csrf
-                    @method("PUT")
-                <div class="stock-details">
-                    <div>
-                        <label for="pochkalar">Pochkalar soni</label>
-                        <input name="items_per_package" type="text" id="pochkalar" value="{{$product->items_per_package}}">
-                    </div>
-                    <div>
-                        <label for="pochkada-dona">Pochkada donalar soni</label>
-                        <input type="text" name="total_packages" id="pochkada-dona" value="{{$product->total_packages}}">
-                    </div>
-                    <div>
-                        <label for="aloqida-dona">Alohida dona</label>
-                        <input type="text" name="total_units" id="aloqida-dona" value="{{$product->total_units}}">
-                    </div>
-                    <div>
-                        <label for="tonna">Umumiy Tonna</label>
-                        <input type="text" id="tonna" name="total_weight" value="{{$product->total_weight}}">
-                    </div>
-                </div>
-
-                <div class="operations">
-                    <button>Qo'shish </button>
-{{--                    <button>Alohida dona qo'shish</button>--}}
-                </div>
-                </form>
-            </div>
-
-        </div>
-
     </div>
+
+
 @endsection
 @section('scripts')
 
@@ -401,3 +483,5 @@
         });
     </script>
 @endsection
+
+
