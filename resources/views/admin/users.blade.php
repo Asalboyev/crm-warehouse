@@ -179,10 +179,10 @@
                                                         <!--begin::Image input-->
                                                         <div class="image-input image-input-outline"
                                                              data-kt-image-input="true"
-                                                             style="background-image: url('assets/media/svg/avatars/blank.svg')">
+                                                             style="background-image: url('/assets/2024-11-04 22.17.59.jpg')">
                                                             <!--begin::Preview existing avatar-->
                                                             <div class="image-input-wrapper w-125px h-125px"
-                                                                 style="background-image: url('assets/media/svg/avatars/blank.svg');">
+                                                                 style="background-image: url('/assets/2024-11-04 22.17.59.jpg');">
                                                             </div>
                                                             <!--end::Preview existing avatar-->
                                                             <!--begin::Label-->
@@ -266,7 +266,6 @@
                                                             <option value="seller">Seller</option>
                                                             <option value="guard">Guard</option>
                                                             <option value="warehouseman">Warehouseman</option>
-                                                            <option value="Trial">Trial</option>
                                                         </select>
                                                     </div>                                                <!--end::Input group-->
                                                 </div>
@@ -371,7 +370,7 @@
                                                 <div class="symbol symbol-circle symbol-50px overflow-hidden me-3">
                                                     <a href="#">
                                                         <div class="symbol-label">
-                                                            <img src="assets/media/svg/avatars/blank.svg" alt="Emma Smith"
+                                                            <img src="/assets/2024-11-04 22.17.59.jpg" alt="Emma Smith"
                                                                  class="w-100">
                                                         </div>
                                                     </a>
@@ -502,19 +501,19 @@
     </script>
 
     <script src="/assets/plugins/global/plugins.bundle.js"></script>
-    <script src="/assets/js/scripts.bundle.js"></script>
+{{--    <script src="/assets/js/scripts.bundle.js"></script>--}}
     <!--end::Global Javascript Bundle-->
     <!--begin::Page Vendors Javascript(used by this page)-->
-    <script src="/assets/plugins/custom/datatables/datatables.bundle.js"></script>
+{{--    <script src="/assets/plugins/custom/datatables/datatables.bundle.js"></script>--}}
     <!--end::Page Vendors Javascript-->
     <!--begin::Page Custom Javascript(used by this page)-->
-    <script src="/assets/js/custom/apps/user-management/users/list/table.js"></script>
-    <script src="/assets/js/custom/apps/user-management/users/list/export-users.js"></script>
-    <script src="/assets/js/custom/apps/user-management/users/list/add.js"></script>
-    <script src="/assets/js/widgets.bundle.js"></script>
-    <script src="/assets/js/custom/widgets.js"></script>
-    <script src="/assets/js/custom/apps/chat/chat.js"></script>
-    <script src="/assets/js/custom/utilities/modals/upgrade-plan.js"></script>
-    <script src="/assets/js/custom/utilities/modals/create-app.js"></script>
-    <script src="/assets/js/custom/utilities/modals/users-search.js"></script>
+{{--    <script src="/assets/js/custom/apps/user-management/users/list/table.js"></script>--}}
+{{--    <script src="/assets/js/custom/apps/user-management/users/list/export-users.js"></script>--}}
+{{--    <script src="/assets/js/custom/apps/user-management/users/list/add.js"></script>--}}
+{{--    <script src="/assets/js/widgets.bundle.js"></script>--}}
+{{--    <script src="/assets/js/custom/widgets.js"></script>--}}
+{{--    <script src="/assets/js/custom/apps/chat/chat.js"></script>--}}
+{{--    <script src="/assets/js/custom/utilities/modals/upgrade-plan.js"></script>--}}
+{{--    <script src="/assets/js/custom/utilities/modals/create-app.js"></script>--}}
+{{--    <script src="/assets/js/custom/utilities/modals/users-search.js"></script>--}}
 @endsection

@@ -192,12 +192,12 @@
                                                         <!--begin::Input group-->
                                                         <div class="fv-row mb-7 fv-plugins-icon-container">
                                                             <!--begin::Label-->
-                                                            <label class="required fw-bold fs-6 mb-2">Full Name</label>
+                                                            <label class="required fw-bold fs-6 mb-2">title</label>
                                                             <!--end::Label-->
                                                             <!--begin::Input-->
                                                             <input type="text" name="name"
                                                                    class="form-control form-control-solid mb-3 mb-lg-0"
-                                                                   placeholder="Full name">
+                                                                   placeholder="title">
                                                             <!--end::Input-->
                                                             <div class="fv-plugins-message-container invalid-feedback"></div>
                                                         </div>
@@ -216,7 +216,6 @@
                                                     <!--end::Actions-->
                                                     <div>
                                                         <input type="hidden" name="photo" id="image_name">
-
                                                 </form>
                                             </div>
                                             <!--end::Modal body-->

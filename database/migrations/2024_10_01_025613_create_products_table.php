@@ -27,7 +27,7 @@ return new class extends Migration
             $table->string('items_per_package');  // Items per Package
             $table->integer('package_weight', );  // Package Weight in Tons
             $table->integer('package_length');  // Package Length (meters)
-            $table->integer('weight_per_item',);
+            $table->integer('weight_per_item',)->nullable();
             $table->integer('weight_per_meter',);  // Weight per meter
             $table->integer('total_units',);
             $table->integer('bron_package',)->nullable();

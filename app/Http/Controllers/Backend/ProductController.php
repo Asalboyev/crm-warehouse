@@ -39,20 +39,21 @@ class ProductController extends Controller
         return view('admin.product.create', compact('categories'));
     }
 
-
     public function store(Request $request)
     {
         // Preprocess the input to replace commas with dots for numeric fields
         $input = $request->all();
-        $input['price_per_ton'] = str_replace(',', '.', $input['price_per_ton']);
-        $input['length_per_ton'] = str_replace(',', '.', $input['length_per_ton']);
-        $input['price_per_meter'] = str_replace(',', '.', $input['price_per_meter']);
-        $input['price_per_item'] = str_replace(',', '.', $input['price_per_item']);
-        $input['price_per_package'] = str_replace(',', '.', $input['price_per_package']);
-        $input['items_per_package'] = str_replace(',', '.', $input['items_per_package']);
-        $input['package_weight'] = str_replace(',', '.', $input['package_weight']);
-        $input['package_length'] = str_replace(',', '.', $input['package_length']);
-        $input['weight_per_item'] = str_replace(',', '.', $input['weight_per_item']);
+        $fieldsToConvert = [
+            'price_per_ton', 'length_per_ton', 'price_per_meter',
+            'price_per_item', 'price_per_package', 'items_per_package',
+            'package_weight', 'package_length', 'weight_per_item', 'weight_per_meter'
+        ];
+
+        foreach ($fieldsToConvert as $field) {
+            if (isset($input[$field])) {
+                $input[$field] = str_replace(',', '.', $input[$field]);
+            }
+        }
 
         // Validate the data
         $validatedData = $request->validate([
@@ -67,29 +68,83 @@ class ProductController extends Controller
             'price_per_meter' => 'required|numeric',
             'price_per_item' => 'required|numeric',
             'price_per_package' => 'required|numeric',
-            'items_per_package' => 'required|numeric', // Poshka ichidagi donalar soni
+            'items_per_package' => 'required|numeric', // Number of items per package
             'package_weight' => 'required|numeric',
             'package_length' => 'required|numeric',
             'weight_per_meter' => 'required|numeric',
-            'weight_per_item' => 'required|numeric',
         ]);
 
-        // Umumiy donalar sonini hisoblash
-        $total_units = $validatedData['items_per_package']; // Faqat bitta poshka qo'shilsa
-        if (isset($input['packages_count'])) {
-            $total_units *= $input['packages_count']; // Faqat poshkalar soni bo'yicha ko'paytirish
-        } else {
-            $total_units = $validatedData['items_per_package']; // Poshkalar kiritilmagan bo'lsa, alohida bo'ladi
+        // Calculate the total units (total items across packages)
+        $total_units = $validatedData['items_per_package']; // Base calculation
+
+        if (!empty($input['packages_count'])) {
+            // If package count is provided, calculate total units
+            $total_units *= $input['packages_count'];
         }
 
-        // Yangi mahsulot ma'lumotlariga total_units ni qo'shamiz
+        // Add total units to validated data
         $validatedData['total_units'] = $total_units;
 
         // Store the product in the database
         Product::create($validatedData);
 
+        // Redirect back with success message
         return redirect()->route('product.index')->with('message', 'Product created successfully!');
     }
+
+//    public function store(Request $request)
+//    {
+//        // Preprocess the input to replace commas with dots for numeric fields
+//        $input = $request->all();
+//        $input['price_per_ton'] = str_replace(',', '.', $input['price_per_ton']);
+//        $input['length_per_ton'] = str_replace(',', '.', $input['length_per_ton']);
+//        $input['price_per_meter'] = str_replace(',', '.', $input['price_per_meter']);
+//        $input['price_per_item'] = str_replace(',', '.', $input['price_per_item']);
+//        $input['price_per_package'] = str_replace(',', '.', $input['price_per_package']);
+//        $input['items_per_package'] = str_replace(',', '.', $input['items_per_package']);
+//        $input['package_weight'] = str_replace(',', '.', $input['package_weight']);
+//        $input['package_length'] = str_replace(',', '.', $input['package_length']);
+//        $input['weight_per_item'] = str_replace(',', '.', $input['weight_per_item']);
+//
+//        // Validate the data
+//        $validatedData = $request->validate([
+//            'product_name' => 'required|string|max:255',
+//            'category_id' => 'required|exists:categories,id',
+//            'country' => 'required|string|max:255',
+//            'thickness' => 'required|numeric',
+//            'length' => 'required|numeric',
+//            'metal_type' => 'required|string|max:50',
+//            'price_per_ton' => 'required|numeric',
+//            'length_per_ton' => 'required|numeric',
+//            'price_per_meter' => 'required|numeric',
+//            'price_per_item' => 'required|numeric',
+//            'price_per_package' => 'required|numeric',
+//            'items_per_package' => 'required|numeric', // Poshka ichidagi donalar soni
+//            'package_weight' => 'required|numeric',
+//            'package_length' => 'required|numeric',
+//            'weight_per_meter' => 'required|numeric',
+//            'weight_per_item' => 'required|numeric',
+//        ]);
+//
+//        // Umumiy donalar sonini hisoblash
+//        $total_units = $validatedData['items_per_package']; // Faqat bitta poshka qo'shilsa
+//        if (isset($input['packages_count'])) {
+//            $total_units *= $input['packages_count']; // Faqat poshkalar soni bo'yicha ko'paytirish
+//        } else {
+//            $total_units = $validatedData['items_per_package']; // Poshkalar kiritilmagan bo'lsa, alohida bo'ladi
+//        }
+//
+//        // Yangi mahsulot ma'lumotlariga total_units ni qo'shamiz
+//        $validatedData['total_units'] = $total_units;
+//
+//        // Store the product in the database
+//        Product::create($validatedData);
+//
+//        return redirect()->route('product.index')->with('message', 'Product created successfully!');
+//    }
+
+
+
 
     public function show($id)
     {

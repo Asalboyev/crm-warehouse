@@ -35,9 +35,7 @@
                     <!--begin::Breadcrumb-->
                     <ul class="breadcrumb breadcrumb-separatorless fw-bold fs-7 my-1">
                         <!--begin::Item-->
-                        <li class="breadcrumb-item text-muted">
-                            <a href="../../demo1/dist/index.html" class="text-muted text-hover-primary">Home</a>
-                        </li>
+
                         <!--end::Item-->
                         <!--begin::Item-->
                         <li class="breadcrumb-item">
@@ -90,7 +88,7 @@
                                 <div class="d-flex flex-center flex-column py-5">
                                     <!--begin::Avatar-->
                                     <div class="symbol symbol-100px symbol-circle mb-7">
-                                        <img src="/assets/media/avatars/300-6.jpg" alt="image" />
+                                        <img src="/assets/2024-11-04 22.17.59.jpg" alt="image" />
                                     </div>
                                     <!--end::Avatar-->
                                     <!--begin::Name-->
