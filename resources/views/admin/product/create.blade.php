@@ -115,8 +115,6 @@
                                 <div>
                                     <div class="separator separator-dashed my-5"></div>
                                 </div>
-
-                                <!-- Price Section -->
                                 <div class="card-title">
                                     <h2>Narxi</h2>
                                 </div>
@@ -155,12 +153,9 @@
                                         </div>
                                     </div>
                                 </div>
-
                                 <div>
                                     <div class="separator separator-dashed my-5"></div>
                                 </div>
-
-                                <!-- Values Section -->
                                 <div class="card-title">
                                     <h2>Qiymatlari</h2>
                                 </div>
@@ -194,7 +189,6 @@
                                         </div>
                                     </div>
                                 </div>
-
                             </div>
                         </div>
 
@@ -262,6 +256,5 @@
 <div id="calculated_values" class="mt-5">
     <!-- This will dynamically display the full calculated values in the format you want -->
 </div>
-
 
 @endsection

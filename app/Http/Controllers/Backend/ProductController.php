@@ -239,7 +239,6 @@ class ProductController extends Controller
         $input['items_per_package'] = str_replace(',', '.', $input['items_per_package']);
         $input['package_weight'] = str_replace(',', '.', $input['package_weight']);
         $input['package_length'] = str_replace(',', '.', $input['package_length']);
-        $input['weight_per_item'] = str_replace(',', '.', $input['weight_per_item']);
 
         // Validate the data
         $validatedData = $request->validate([
@@ -258,7 +257,6 @@ class ProductController extends Controller
             'package_weight' => 'required|numeric',
             'package_length' => 'required|numeric',
             'weight_per_meter' => 'required|numeric',
-            'weight_per_item' => 'required|numeric',
 
         ]);
 

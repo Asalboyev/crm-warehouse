@@ -69,93 +69,111 @@
                                     <h2>Parametrlar</h2>
                                 </div>
                                 <div class="mt-10">
-                                    <div class="form-group">
-                                        <div class="d-flex flex-column gap-3">
-                                            <div class="form-group d-flex flex-wrap gap-5">
-                                                <div class="w-100 w-md-200px">
-                                                    <label class="form-label">Qalinligi (Стенка)</label>
-                                                    <input name="thickness" value="{{ $product->thickness }}" class="form-control mb-2" placeholder="qalinligi">
-                                                </div>
-                                                <div class="w-100 w-md-200px">
-                                                    <label class="form-label">Uzunligi</label>
-                                                    <input name="length" value="{{ $product->length }}" class="form-control mb-2" placeholder="uzunligi">
-                                                </div>
-                                                <div class="w-100 w-md-200px">
-                                                    <label class="form-label">Rangi:</label>
-                                                    <select class="form-select mb-2" name="metal_type" required>
-                                                        <option value="Qora" {{ $product->metal_type === 'Qora' ? 'selected' : '' }}>Qora</option>
-                                                        <option value="Oq" {{ $product->metal_type === 'Oq' ? 'selected' : '' }}>Oq</option>
-                                                    </select>
+                                    <div id="kt_ecommerce_add_category_conditions">
+                                        <div class="form-group">
+                                            <div class="d-flex flex-column gap-3">
+                                                <div class="form-group d-flex flex-wrap gap-5">
+                                                    <!-- Thickness -->
+                                                    <div class="w-100 w-md-200px">
+                                                        <label class="form-label">Qalinligi (Стенка)</label>
+                                                        <input type="text" id="thickness" name="thickness" class="form-control mb-2" value="{{ $product->thickness }}" required>
+                                                    </div>
+                                                    <!-- Length -->
+                                                    <div class="w-100 w-md-200px">
+                                                        <label class="form-label">Uzunligi</label>
+                                                        <input id="length" name="length" class="form-control mb-2" value="{{ $product->length }}" required>
+                                                    </div>
+                                                    <!-- Metal Type -->
+                                                    <div class="w-100 w-md-200px">
+                                                        <label class="form-label">Rangi:</label>
+                                                        <select class="form-select mb-2" name="metal_type" required>
+                                                            <option value="Qora">Qora</option>
+                                                            <option value="Oq">Oq</option>
+                                                        </select>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
+                                </div>
 
+                                <div>
                                     <div class="separator separator-dashed my-5"></div>
-                                    <div class="card-title">
-                                        <h2>Narxi</h2>
-                                    </div>
-                                    <div class="mt-10">
+                                </div>
+                                <div class="card-title">
+                                    <h2>Narxi</h2>
+                                </div>
+                                <div class="mt-10">
+                                    <div id="kt_ecommerce_add_category_conditions">
                                         <div class="form-group">
                                             <div class="d-flex flex-column gap-3">
                                                 <div class="form-group d-flex flex-wrap gap-5">
+                                                    <!-- Price per Ton -->
                                                     <div class="w-100 w-md-200px">
                                                         <label class="form-label">1 tonna narxi</label>
-                                                        <input name="price_per_ton" value="{{ $product->price_per_ton }}" class="form-control mb-2" placeholder="1 tonna narxi">
+                                                        <input id="price_per_ton" name="price_per_ton" class="form-control mb-2" value="{{ $product->price_per_ton }}" required>
                                                     </div>
+                                                    <!-- Length per Ton -->
                                                     <div class="w-100 w-md-200px">
                                                         <label class="form-label">1 tonna uzunligi:</label>
-                                                        <input name="length_per_ton" value="{{ $product->length_per_ton }}" class="form-control mb-2" placeholder="1 tonna uzunligi:">
+                                                        <input id="length_per_ton" name="length_per_ton" class="form-control mb-2" value="{{ $product->length_per_ton }}" required>
                                                     </div>
+                                                    <!-- Price per Meter -->
                                                     <div class="w-100 w-md-200px">
-                                                        <label class="form-label">1 Metr uchun narx:</label>
-                                                        <input name="price_per_meter" value="{{ $product->price_per_meter }}" class="form-control mb-2" placeholder="1 metr uchun narx:">
+                                                        <label class="form-label">1 metr uchun narx:</label>
+                                                        <input id="price_per_meter" name="price_per_meter" class="form-control mb-2" value="{{ $product->price_per_meter }}" required readonly style="background-color: #F5F5F7; border: 1px solid #ccc; color: #333;" >
                                                     </div>
+                                                    <!-- Price per Item -->
                                                     <div class="w-100 w-md-200px">
-                                                        <label class="form-label">1 Dona uchun narx:</label>
-                                                        <input name="price_per_item" value="{{ $product->price_per_item }}" class="form-control mb-2" placeholder="1 dona uchun narx:">
+                                                        <label class="form-label">1 dona uchun narx:</label>
+                                                        <input id="price_per_item" name="price_per_item" class="form-control mb-2" value="{{ $product->price_per_item }}" required readonly style="background-color: #F5F5F7; border: 1px solid #ccc; color: #333;" >
                                                     </div>
+                                                    <!-- Price per Package -->
                                                     <div class="w-100 w-md-200px">
-                                                        <label class="form-label">1 Pochka narxi:</label>
-                                                        <input name="price_per_package" value="{{ $product->price_per_package }}" class="form-control mb-2" placeholder="1 pochka narxi:">
+                                                        <label class="form-label">1 pochka narxi:</label>
+                                                        <input id="price_per_package" name="price_per_package" class="form-control mb-2" value="{{ $product->price_per_package }}" required readonly style="background-color: #F5F5F7; border: 1px solid #ccc; color: #333;" >
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
-
+                                </div>
+                                <div>
                                     <div class="separator separator-dashed my-5"></div>
-                                    <div class="card-title">
-                                        <h2>Qiymatlari</h2>
-                                    </div>
-                                    <div class="mt-10">
+                                </div>
+                                <div class="card-title">
+                                    <h2>Qiymatlari</h2>
+                                </div>
+                                <div class="mt-10">
+                                    <div id="kt_ecommerce_add_category_conditions">
                                         <div class="form-group">
                                             <div class="d-flex flex-column gap-3">
                                                 <div class="form-group d-flex flex-wrap gap-5">
+                                                    <!-- Items per Package -->
                                                     <div class="w-100 w-md-200px">
                                                         <label class="form-label">1 pochkadagi soni:</label>
-                                                        <input name="items_per_package" value="{{ $product->items_per_package }}" class="form-control mb-2" placeholder="1 pochkadagi soni:">
+                                                        <input id="items_per_package" name="items_per_package" class="form-control mb-2" value="{{ $product->items_per_package }}" required>
                                                     </div>
+                                                    <!-- Package Weight -->
                                                     <div class="w-100 w-md-200px">
                                                         <label class="form-label">1 pochkaning og’irligi</label>
-                                                        <input name="package_weight" value="{{ $product->package_weight }}" class="form-control mb-2" placeholder="1 pochkaning og’irligi">
+                                                        <input id="package_weight" name="package_weight" class="form-control mb-2" value="{{ $product->package_weight }}" required  >
                                                     </div>
+                                                    <!-- Package Length -->
                                                     <div class="w-100 w-md-200px">
                                                         <label class="form-label">1 pochka uzunligi:</label>
-                                                        <input name="package_length" value="{{ $product->package_length }}" class="form-control mb-2" placeholder="1 pochka uzunligi:">
+                                                        <input id="package_length" name="package_length" class="form-control mb-2" value="{{ $product->package_length }}" required readonly style="background-color: #F5F5F7; border: 1px solid #ccc; color: #333;" >
                                                     </div>
+                                                    <!-- Weight per Meter -->
                                                     <div class="w-100 w-md-200px">
-                                                        <label class="form-label">1 metr og‘riligi:</label>
-                                                        <input name="weight_per_meter" value="{{ $product->weight_per_meter }}" class="form-control mb-2" placeholder="1 metr og‘riligi:">
+                                                        <label class="form-label">1 metr og‘irligi:</label>
+                                                        <input id="weight_per_meter" name="weight_per_meter" class="form-control mb-2" value="{{ $product->weight_per_meter }}" required readonly style="background-color: #F5F5F7; border: 1px solid #ccc; color: #333;" >
                                                     </div>
-{{--                                                    <div class="w-100 w-md-200px">--}}
-{{--                                                        <label class="form-label">1 Dona og‘riligi:</label>--}}
-{{--                                                        <input name="weight_per_item" value="{{ $product->weight_per_item }}" class="form-control mb-2" placeholder="1 dona og‘riligi:">--}}
-{{--                                                    </div>--}}
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
+                                </div>
 
                                 </div>
                             </div>
@@ -190,4 +208,52 @@
     </div>
 @endsection
 @section('scripts')
+    <script>
+        // Function to calculate and display values
+        function calculateValues() {
+            const pricePerTon = parseFloat(document.getElementById('price_per_ton').value) || 0; // 1 tonna narxi
+            const lengthPerTon = parseFloat(document.getElementById('length_per_ton').value) || 0; // 1 tonna uzunligi
+            const length = parseFloat(document.getElementById('length').value) || 0; // Uzunligi
+            const itemsPerPackage = parseFloat(document.getElementById('items_per_package').value) || 0; // 1 pochkadagi soni
+            const packageWeight = parseFloat(document.getElementById('package_weight').value) || 0; // 1 pochkaning og‘irligi
+
+            // Calculate price per meter
+            const pricePerMeter = (pricePerTon / lengthPerTon).toFixed(3); // 1 metr uchun narx
+            document.getElementById('price_per_meter').value = pricePerMeter;
+
+            // Calculate price per item
+            const pricePerItem = (pricePerTon / lengthPerTon * length).toFixed(2); // 1 Dona uchun narx
+            document.getElementById('price_per_item').value = pricePerItem;
+
+            // Calculate price per package
+            const pricePerPackage = (packageWeight * pricePerTon).toFixed(2); // 1 pochka narxi
+            document.getElementById('price_per_package').value = pricePerPackage;
+
+            // Calculate package length
+            const packageLength = (itemsPerPackage * length).toFixed(2); // 1 pochka uzunligi
+            document.getElementById('package_length').value = packageLength;
+
+            // Calculate weight per meter
+            const weightPerMeter = (packageWeight / itemsPerPackage / length).toFixed(6); // 1 metr og‘irligi
+            document.getElementById('weight_per_meter').value = weightPerMeter;
+
+            // Display calculated values in full sentences
+
+
+            // Display the full formatted result
+            document.getElementById('calculated_values').innerText = resultText;
+        }
+
+        // Add event listeners for real-time calculation
+        document.getElementById('price_per_ton').addEventListener('input', calculateValues);
+        document.getElementById('length_per_ton').addEventListener('input', calculateValues);
+        document.getElementById('length').addEventListener('input', calculateValues);
+        document.getElementById('items_per_package').addEventListener('input', calculateValues);
+        document.getElementById('package_weight').addEventListener('input', calculateValues);
+    </script>
+
+    <!-- HTML Section to display the result -->
+    <div id="calculated_values" class="mt-5">
+        <!-- This will dynamically display the full calculated values in the format you want -->
+    </div>
 @endsection
