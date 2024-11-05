@@ -15,39 +15,39 @@ class CategoriesController extends Controller
      * Display a listing of the resource.
      */
 
-        public function ajax(Request $request)
-        {
-            if ($request->hasFile('file')) {
-                try {
-                    $image = $request->file('file');
+    public function ajax(Request $request)
+    {
+        if ($request->hasFile('file')) {
+            try {
+                $image = $request->file('file');
 
-                    // Generate a unique name for the image
-                    $imageName = time() . '.webp'; // Save as webp
+                // Generate a unique name for the image
+                $imageName = time() . '.webp'; // Save as webp
 
-                    // Convert image to webp format
-                    $img = Image::make($image)->encode('webp', 90); // 90 is the quality
+                // Convert image to webp format
+                $img = Image::make($image)->encode('webp', 90); // 90 is the quality
 
-                    // Define path to store the image
-                    $path = 'categories-images/' . $imageName;
+                // Define path to store the image
+                $path = 'categories-images/' . $imageName;
 
-                    // Save the converted image to storage
-                    Storage::disk('public')->put($path, $img);
+                // Save the converted image to storage
+                Storage::disk('public')->put($path, $img);
 
-                    // Return success response with the relative path
-                    return response()->json(['success' => $path]);
+                // Return success response with the relative path
+                return response()->json(['success' => $path]);
 
-                } catch (\Exception $e) {
-                    // Log the exception for debugging
-                    \Log::error('Image upload failed: ' . $e->getMessage());
+            } catch (\Exception $e) {
+                // Log the exception for debugging
+                \Log::error('Image upload failed: ' . $e->getMessage());
 
-                    // Return error response
-                    return response()->json(['error' => 'Failed to upload image.'], 500);
-                }
-            } else {
-                // Return error response if no file is uploaded
-                return response()->json(['error' => 'No file uploaded'], 400);
+                // Return error response
+                return response()->json(['error' => 'Failed to upload image.'], 500);
             }
+        } else {
+            // Return error response if no file is uploaded
+            return response()->json(['error' => 'No file uploaded'], 400);
         }
+    }
 
     public function index(Request $request)
     {
@@ -62,7 +62,6 @@ class CategoriesController extends Controller
 
         return view('admin.categories.index', compact('categories', 'search'));
     }
-
 
 
     /**
@@ -108,7 +107,7 @@ class CategoriesController extends Controller
     {
         $category = Category::findOrFail($id);
 
-        return view('admin.categories.edit',compact('category'));
+        return view('admin.categories.edit', compact('category'));
     }
 
     /**
@@ -135,18 +134,25 @@ class CategoriesController extends Controller
      */
     public function destroy($id)
     {
-        // Foydalanuvchini topish
+        // Kategoriyani topish
         $category = Category::find($id);
 
-        // Agar foydalanuvchi topilmasa, xatolik xabarini ko'rsatish
+        // Agar kategoriya topilmasa, xatolik xabarini ko'rsatish
         if (!$category) {
             return redirect()->back()->with(['error' => 'Category not found!']);
         }
 
-        // Foydalanuvchini o'chirish
+        // Kategoriya bilan bog'liq mahsulotlarni tekshirish
+        if ($category->products()->count() > 0) {
+            // Agar kategoriya mahsulotlarga ega bo'lsa, xatolik xabarini ko'rsatish
+            return redirect()->back()->with(['error' => 'Ushbu turkumda tegishli mahsulotlar mavjud. Iltimos, avval mahsulotlarni o\'chirib tashlang!']);
+        }
+
+        // Agar bog'liq mahsulotlar bo'lmasa, kategoriyani o'chirish
         $category->delete();
 
-        // O'chirilgandan keyin foydalanuvchini qayta yo'naltirish va xabar ko'rsatish
+        // O'chirilgandan keyin foydalanuvchini qayta yo'naltirish va muvaffaqiyat xabarini ko'rsatish
         return redirect()->back()->with(['message' => 'Category successfully deleted!']);
     }
+
 }

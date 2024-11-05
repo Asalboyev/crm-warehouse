@@ -274,7 +274,12 @@ class ProductController extends Controller
             return redirect()->route('product.index')->with('error', 'Product not found!');
         }
 
+        // Bog'liq order_products yozuvlarini o'chirish
+        OrderProduct::where('product_id', $id)->delete();
+
+        // Mahsulotni o'chirish
         $product->delete();
+
         return redirect()->route('product.index')->with('message', 'Product deleted successfully!');
     }
 
