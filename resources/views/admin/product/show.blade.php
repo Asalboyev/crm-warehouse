@@ -15,6 +15,17 @@
             background-color: #f4f4f4;
             padding: 20px;
         }
+        /* Jadval ustunlarini markazlashtirish */
+        .table th, .table td {
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        /* Xaridor va sotuvchi ma'lumotlari bloklarini bo'lib ko'rsatish */
+        .info-block {
+            display: inline-block;
+            text-align: left;
+        }
 
         .container {
             max-width: 1200px;
@@ -231,18 +242,15 @@
             <div class="d-flex flex-column flex-row-fluid gap-7 gap-lg-10">
                 <!--begin:::Tabs-->
                 <ul class="nav nav-custom nav-tabs nav-line-tabs nav-line-tabs-2x border-0 fs-4 fw-bold mb-n2">
-                    <!--begin:::Tab item-->
                     <li class="nav-item">
-                        <a class="nav-link text-active-primary pb-4 active" data-bs-toggle="tab"
-                            href="#kt_ecommerce_add_product_general">Mahsulot haqida</a>
+                        <a class="nav-link text-active-primary pb-4 active" data-bs-toggle="tab" href="#kt_ecommerce_add_product_general">Mahsulot haqida</a>
                     </li>
-                    <!--end:::Tab item-->
-                    <!--begin:::Tab item-->
                     <li class="nav-item">
-                        <a class="nav-link text-active-primary pb-4" data-bs-toggle="tab"
-                            href="#kt_ecommerce_add_product_advanced">Sotuv tarixi</a>
+                        <a class="nav-link text-active-primary pb-4" data-bs-toggle="tab" href="#kt_ecommerce_add_product_advanced">Sotuv tarixi</a>
                     </li>
-                    <!--end:::Tab item-->
+                    <li class="nav-item">
+                        <a class="nav-link text-active-primary pb-4" data-bs-toggle="tab" href="#kt_ecommerce_add_product_turnover">Mahsulot aylanmasi</a>
+                    </li>
                 </ul>
                 <!--end:::Tabs-->
                 <!--begin::Tab content-->
@@ -369,6 +377,48 @@
                     </div>
                     <!--end::Tab pane-->
                     <!--begin::Tab pane-->
+                    <div class="tab-pane fade" id="kt_ecommerce_add_product_turnover" role="tabpanel">
+                        <div class="d-flex flex-column gap-7 gap-lg-10">
+                            <div class="card card-flush py-4">
+                                <div class="card-header">
+                                    <h2>Mahsulot aylanmasi</h2>
+                                </div>
+                                <div class="card-body pt-0">
+                                    <div class="table-responsive">
+                                        <table class="table table-bordered table-striped align-middle gs-0 gy-4">
+                                            <thead style="background: #e9edf1">
+                                            <tr>
+                                                <th>Kirim/Chiqim</th>
+                                                <th>Sana</th>
+                                                <th>Pochkalar soni</th>
+                                                <th>Alohida dona soni</th>
+                                                <th>Og'irlik (Tonna)</th>
+                                                <th>User</th>
+                                            </tr>
+                                            </thead>
+                                            <tbody>
+                                            @forelse ($turnoverDetails as $turnover)
+                                                <tr>
+                                                    <td>{{ $turnover['type'] }}</td>
+                                                    <td>{{ $turnover['date'] }}</td>
+                                                    <td>{{ $turnover['quantity_pack'] }}</td>
+                                                    <td>{{ $turnover['quantity_piece'] }}</td>
+                                                    <td>{{ $turnover['total_weight'] }} Tonna</td>
+                                                    <td>{{ $turnover['user_name'] ?? 'Ma\'lumot yo\'q' }}</td>
+                                                </tr>
+                                            @empty
+                                                <tr>
+                                                    <td colspan="6" class="text-center">Aylanma ma'lumotlari mavjud emas.</td>
+                                                </tr>
+                                            @endforelse
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="tab-pane fade" id="kt_ecommerce_add_product_advanced" role="tab-panel">
                         <div class="d-flex flex-column gap-7 gap-lg-10">
                             <!--begin::Inventory-->
@@ -391,49 +441,58 @@
                                             <!--begin::Table container-->
                                             <div class="table-responsive">
 
-                                                <table class="table align-middle gs-0 gy-4">
-                                                    <thead>
+
+
+                                                <table class="table table-bordered table-striped align-middle gs-0 gy-4">
+                                                    <thead style="background: #e9edf1 ">
                                                     <tr>
-                                                        <th>Order ID</th>
-                                                        <th>Nechi marta sotilgan</th>
-                                                        <th>Seller</th>
-                                                        <th>Buyer</th>
+                                                        <th>Buyurtma ID</th>
+                                                        <th>Sotilgan soni</th>
+                                                        <th>Soni (Pachka)</th>
+                                                        <th>Soni (Dona)</th>
+                                                        <th>Jami Og'irlik (Tonna)</th>
+                                                        <th>Jami Narx ($)</th>
+                                                        <th>Bir tonna narxi ($)</th>
+                                                        <th>Bitta dona narxi ($)</th>
+                                                        <th>Sotuvchi</th>
+                                                        <th>Xaridor</th>
                                                     </tr>
                                                     </thead>
-                                                    <tbody >
+                                                    <tbody>
                                                     @if ($salesDetails->isEmpty())
                                                         <tr>
-                                                            <td colspan="4" class="text-center">Sotuv tarixi mavjud emas.</td>
+                                                            <td colspan="10" class="text-center">Savdo tarixi mavjud emas.</td>
                                                         </tr>
                                                     @else
                                                         @foreach ($salesDetails as $sale)
                                                             <tr>
-                                                                <td>  <span class="text-muted fw-bold text-muted d-block fs-7">{{ $sale['order_id'] }}</span></td>
-
-                                                                <td><span class="text-muted fw-bold text-muted d-block fs-7">{{ $sale['times_sold'] }}</span> </td>
-                                                                <!-- Seller details -->
-                                                                <!-- <td>
-                                                                    <strong>ID:</strong> {{ $sale['sold_by_id'] ?? 'N/A' }} <br>
-                                                                    <strong>Name:</strong> {{ $sale['sold_by'] }} <br>
-                                                                    <strong>Email:</strong> {{ $sale['sold_by_phone'] }}
-                                                                </td>
-                                                                <!-- Buyer details -->
+                                                                <td>{{ $sale['order_id'] }}</td>
+                                                                <td>{{ $sale['times_sold'] }}</td>
+                                                                <td>{{ $sale['quantity_pack'] }}</td>
+                                                                <td>{{ $sale['quantity_piece'] }}</td>
+                                                                <td>{{ $sale['total_weight'] }} Tonna</td>
+                                                                <td>${{ $sale['total_price'] }}</td>
+                                                                <td>${{ $sale['price_per_ton'] }}</td>
+                                                                <td>${{ $sale['price_per_unit'] }}</td>
                                                                 <td>
-                                                                    <span class="text-muted fw-bold text-muted d-block fs-7"><strong>ID:</strong> {{ $sale['sold_to_id'] ?? 'N/A' }} <br>
-                                                                        <strong>Name:</strong> {{ $sale['sold_to'] }} <br>
-                                                                        <strong>Phone:</strong> {{ $sale['sold_to_phone'] }}</span>
+                                                                    <div class="info-block">
+                                                                        <strong>ID:</strong> {{ $sale['sold_by_id'] ?? 'Ma\'lumot yo\'q' }} <br>
+                                                                        <strong>Ism:</strong> {{ $sale['sold_by'] }} <br>
+                                                                        <strong>Email:</strong> {{ $sale['sold_by_phone'] }}
+                                                                    </div>
                                                                 </td>
                                                                 <td>
-                                                                    <strong>ID:</strong> {{ $sale['sold_to_id'] ?? 'N/A' }} <br>
-                                                                            <strong>Name:</strong> {{ $sale['sold_to'] }} <br>
-                                                                            <strong>Phone:</strong> {{ $sale['sold_to_phone'] }}
-                                                                        </td>
+                                                                    <div class="info-block">
+                                                                        <strong>ID:</strong> {{ $sale['sold_to_id'] ?? 'Ma\'lumot yo\'q' }} <br>
+                                                                        <strong>Ism:</strong> {{ $sale['sold_to'] }} <br>
+                                                                        <strong>Telefon:</strong> {{ $sale['sold_to_phone'] }}
+                                                                    </div>
+                                                                </td>
                                                             </tr>
-                                                         @endforeach
+                                                        @endforeach
                                                     @endif
-                                                     </tbody>
-                                                 </table>
-                                                <!--end::Table-->
+                                                    </tbody>
+                                                </table>
                                             </div>
                                             <!--end::Table container-->
                                         </div>
@@ -446,6 +505,48 @@
                             </div>
                         </div>
                     </div>
+                    <div class="tab-pane fade" id="kt_ecommerce_add_product_turnover" role="tabpanel">
+                        <div class="d-flex flex-column gap-7 gap-lg-10">
+                            <div class="card card-flush py-4">
+                                <div class="card-header">
+                                    <h2>Mahsulot aylanmasi</h2>
+                                </div>
+                                <div class="card-body pt-0">
+                                    <div class="table-responsive">
+                                        <table class="table table-bordered table-striped align-middle gs-0 gy-4">
+                                            <thead style="background: #e9edf1">
+                                            <tr>
+                                                <th>Kirim/Chiqim</th>
+                                                <th>Sana</th>
+                                                <th>Pochkalar soni</th>
+                                                <th>Alohida dona soni</th>
+                                                <th>Og'irlik (Tonna)</th>
+                                                <th>User</th>
+                                            </tr>
+                                            </thead>
+                                            <tbody>
+                                            @forelse ($turnoverDetails as $turnover)
+                                                <tr>
+                                                    <td>{{ $turnover['type'] }}</td>
+                                                    <td>{{ $turnover['date'] }}</td>
+                                                    <td>{{ $turnover['quantity_pack'] }}</td>
+                                                    <td>{{ $turnover['quantity_piece'] }}</td>
+                                                    <td>{{ $turnover['total_weight'] }} Tonna</td>
+                                                    <td>{{ $turnover['user_name'] ?? 'Ma\'lumot yo\'q' }}</td>
+                                                </tr>
+                                            @empty
+                                                <tr>
+                                                    <td colspan="6" class="text-center">Aylanma ma'lumotlari mavjud emas.</td>
+                                                </tr>
+                                            @endforelse
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <!--end::Tab pane-->
                 </div>
 
@@ -483,5 +584,5 @@
         });
     </script>
 @endsection
- 
+
 

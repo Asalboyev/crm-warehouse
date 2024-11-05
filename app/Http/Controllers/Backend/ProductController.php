@@ -7,6 +7,7 @@ use App\Models\Product;
 use Illuminate\Http\Request;
 use App\Models\Category;
 use App\Models\OrderProduct;
+use App\Models\Turnover;
 
 class ProductController extends Controller
 {
@@ -29,7 +30,8 @@ class ProductController extends Controller
                 return $query->where('category_id', $category_id);
             })
             ->latest()
-            ->paginate(10);
+            ->paginate(10)
+            ->appends(['search' => $search, 'category_id' => $category_id]); // Retain search and filters in pagination
 
         return view('admin.product.index', compact('products', 'categories', 'search', 'category_id'));
     }
@@ -146,42 +148,95 @@ class ProductController extends Controller
 
 
 
+//    public function show($id)
+//    {
+//        // Fetch all categories
+//        $categories = Category::query()->get();
+//
+//        // Fetch the product by ID
+//        $product = Product::find($id);
+//        if (!$product) {
+//            return redirect()->route('product.index')->with('error', 'Product not found!');
+//        }
+//
+//        // Fetch sales details for the specific product
+//        $salesDetails = OrderProduct::with(['order.user', 'order.client'])
+//            ->where('product_id', $id)
+//            ->get()
+//            ->map(function ($orderProduct) {
+//                // Check if the order exists
+//                $order = $orderProduct->order;
+//
+//                return [
+//                    'order_id' => $order ? $order->id : null, // Include order ID
+//                    'sold_to_id' => $order ? optional($order->client)->id : null, // Client ID
+//                    'sold_to' => $order ? optional($order->client)->name : 'N/A', // Client name, default to 'N/A'
+//                    'sold_to_phone' => $order ? optional($order->client)->phone : 'N/A', // Client phone, default to 'N/A'
+//                    'sold_by_id' => $order ? optional($order->user)->id : null,   // Seller ID
+//                    'sold_by' => $order ? optional($order->user)->name : 'N/A',   // Seller name, default to 'N/A'
+//                    'sold_by_phone' => $order ? optional($order->user)->email : 'N/A', // Seller phone, default to 'N/A'
+//                    'times_sold' => $orderProduct->times_sold,
+//                    'quantity_pochka' => $orderProduct->quantity_pochka,
+//                    'quantity_dona' => $orderProduct->quantity_dona,
+//                    'total_quantity' => $orderProduct->quantity_pochka + $orderProduct->quantity_dona, // Total quantity sold
+//                ];
+//            });
+//
+//        // Pass the product and sales details to the view
+//        return view('admin.product.show', compact('product', 'categories', 'salesDetails'));
+//    }
+
     public function show($id)
     {
-        // Fetch all categories
+        // Kategoriyalarni olish
         $categories = Category::query()->get();
 
-        // Fetch the product by ID
+        // Mahsulotni ID orqali olish
         $product = Product::find($id);
         if (!$product) {
-            return redirect()->route('product.index')->with('error', 'Product not found!');
+            return redirect()->route('product.index')->with('error', 'Mahsulot topilmadi!');
         }
 
-        // Fetch sales details for the specific product
+        // Mahsulotning savdo tafsilotlarini olish
         $salesDetails = OrderProduct::with(['order.user', 'order.client'])
             ->where('product_id', $id)
             ->get()
             ->map(function ($orderProduct) {
-                // Check if the order exists
                 $order = $orderProduct->order;
 
                 return [
-                    'order_id' => $order ? $order->id : null, // Include order ID
-                    'sold_to_id' => $order ? optional($order->client)->id : null, // Client ID
-                    'sold_to' => $order ? optional($order->client)->name : 'N/A', // Client name, default to 'N/A'
-                    'sold_to_phone' => $order ? optional($order->client)->phone : 'N/A', // Client phone, default to 'N/A'
-                    'sold_by_id' => $order ? optional($order->user)->id : null,   // Seller ID
-                    'sold_by' => $order ? optional($order->user)->name : 'N/A',   // Seller name, default to 'N/A'
-                    'sold_by_phone' => $order ? optional($order->user)->email : 'N/A', // Seller phone, default to 'N/A'
+                    'order_id' => $order ? $order->id : null,
+                    'sold_to_id' => $order ? optional($order->client)->id : null,
+                    'sold_to' => $order ? optional($order->client)->name : 'Ma\'lumot yo\'q',
+                    'sold_to_phone' => $order ? optional($order->client)->phone : 'Ma\'lumot yo\'q',
+                    'sold_by_id' => $order ? optional($order->user)->id : null,
+                    'sold_by' => $order ? optional($order->user)->name : 'Ma\'lumot yo\'q',
+                    'sold_by_phone' => $order ? optional($order->user)->email : 'Ma\'lumot yo\'q',
                     'times_sold' => $orderProduct->times_sold,
-                    'quantity_pochka' => $orderProduct->quantity_pochka,
-                    'quantity_dona' => $orderProduct->quantity_dona,
-                    'total_quantity' => $orderProduct->quantity_pochka + $orderProduct->quantity_dona, // Total quantity sold
+                    'quantity_pack' => $orderProduct->quantity_pack,
+                    'quantity_piece' => $orderProduct->quantity_piece,
+                    'total_quantity' => $orderProduct->quantity_pack + $orderProduct->quantity_piece,
+                    'total_weight' => $orderProduct->total_weight,
+                    'total_price' => $orderProduct->total_price,
+                    'price_per_ton' => $orderProduct->price_per_ton,
+                    'price_per_unit' => $orderProduct->price_per_unit,
                 ];
             });
 
-        // Pass the product and sales details to the view
-        return view('admin.product.show', compact('product', 'categories', 'salesDetails'));
+        // Mahsulotning aylanma tafsilotlarini olish
+        $turnoverDetails = Turnover::where('product_id', $id)->with('user')->get()->map(function ($turnover) {
+            return [
+                'type' => $turnover->type,
+                'date' => $turnover->created_at->format('Y-m-d'),
+                'quantity_pack' => $turnover->quantity_pack,
+                'quantity_piece' => $turnover->quantity_piece,
+                'total_weight' => $turnover->total_weight,
+                'user_name' => $turnover->user->name ?? 'Ma\'lumot yo\'q',
+            ];
+        });
+
+        // Mahsulot va savdo tafsilotlarini ko'rinishga uzatish
+        return view('admin.product.show', compact('product', 'categories', 'salesDetails', 'turnoverDetails'));
     }
 
 
@@ -189,24 +244,61 @@ class ProductController extends Controller
 
 
     // Add packages to stock
+//    public function addPackage(Request $request, $id)
+//    {
+//        $product = Product::findOrFail($id);
+//
+//        // Update stock information
+//        $product->items_per_package += $request->input('items_per_package');
+//        $product->total_units += $request->input('total_units');
+//        $product->total_packages += $request->input('total_packages');
+//        $product->total_weight += $request->input('total_weight');
+//        $product->save();
+//
+//        // Log turnover for 'kirim' (incoming) type
+//        Turnover::create([
+//            'product_id' => $product->id,
+//            'user_id' => auth()->id(),
+//            'type' => 'kirim', // 'kirim' for incoming stock
+//            'quantity_pack' => $request->input('items_per_package'),
+//            'quantity_piece' => $request->input('total_units'),
+//            'total_weight' => $request->input('total_weight'),
+//        ]);
+//        return redirect()->route('product.index')->with('message', 'Mahsulot qoldiqlar qoshildi');
+//    }
     public function addPackage(Request $request, $id)
     {
+        // Validate incoming request
+        $validated = $request->validate([
+            'items_per_package' => 'required|integer|min:0', // Allow zero if no packages are added
+            'total_units' => 'required|integer|min:0', // Allow zero if no units are added
+            'total_packages' => 'required|integer|min:0', // Allow zero if no packages are added
+            'total_weight' => 'required|numeric|min:0', // Allow zero if no weight is added
+        ]);
+
+        // Find the product
         $product = Product::findOrFail($id);
 
-        // items_per_package is updated directly with user input
-        $product->items_per_package = $request->input('items_per_package');
-
-        // total_units is updated with user input, no automatic calculation
-        $product->total_units = $request->input('total_units');
-
-        // Other fields are updated as usual
-        $product->total_packages += $request->input('total_packages');
-        $product->total_weight += $request->input('total_weight');
-
+        // Update stock information directly by adding the new quantities
+        $product->items_per_package += $validated['items_per_package'];
+        $product->total_units += $validated['total_units'];
+        $product->total_packages += $validated['total_packages'];
+        $product->total_weight += $validated['total_weight'];
         $product->save();
+
+        // Log turnover for 'kirim' (incoming) type
+        Turnover::create([
+            'product_id' => $product->id,
+            'user_id' => auth()->id(),
+            'type' => 'kirim', // 'kirim' for incoming stock
+            'quantity_pack' => $validated['items_per_package'], // Quantity of packages added
+            'quantity_piece' => $validated['total_units'], // Quantity of individual units added
+            'total_weight' => $validated['total_weight'], // Total weight added
+        ]);
 
         return redirect()->route('product.index')->with('message', 'Mahsulot qoldiqlar qoshildi');
     }
+
 
 
 

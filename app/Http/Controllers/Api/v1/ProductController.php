@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Product;
 use Illuminate\Http\Request;
 use App\Models\Category;
+use App\Models\Turnover;
 
 class ProductController extends Controller
 {
@@ -71,18 +72,41 @@ class ProductController extends Controller
     }
 
     // Add packages to stock
+//    public function addPackage(Request $request, $id)
+//    {
+//        $product = Product::findOrFail($id);
+//
+//        // Add the number of packages and recalculate total weight
+//        $product->items_per_package += $request->input('items_per_package');
+//        $product->total_units += $request->input('total_units');
+//        $product->total_packages += $request->input('total_packages');
+//        $product->total_weight += $request->input('total_weight');
+////        $product->total_weight += $request->input('package_count') * $product->package_weight;
+//
+//        $product->save();
+//
+//        return response()->json(['message' => 'Packages added', 'product' => $product]);
+//    }
     public function addPackage(Request $request, $id)
     {
         $product = Product::findOrFail($id);
 
-        // Add the number of packages and recalculate total weight
+        // Update stock information
         $product->items_per_package += $request->input('items_per_package');
         $product->total_units += $request->input('total_units');
         $product->total_packages += $request->input('total_packages');
         $product->total_weight += $request->input('total_weight');
-//        $product->total_weight += $request->input('package_count') * $product->package_weight;
-
         $product->save();
+
+        // Log turnover for 'kirim' (incoming) type
+        Turnover::create([
+            'product_id' => $product->id,
+            'user_id' => auth()->id(),
+            'type' => 'kirim', // 'kirim' for incoming stock
+            'quantity_pack' => $request->input('items_per_package'),
+            'quantity_piece' => $request->input('total_units'),
+            'total_weight' => $request->input('total_weight'),
+        ]);
 
         return response()->json(['message' => 'Packages added', 'product' => $product]);
     }

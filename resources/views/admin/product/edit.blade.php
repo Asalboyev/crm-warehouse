@@ -81,7 +81,7 @@
                                                     <!-- Length -->
                                                     <div class="w-100 w-md-200px">
                                                         <label class="form-label">Uzunligi</label>
-                                                        <input id="length" name="length" class="form-control mb-2" value="{{ $product->length }}" required>
+                                                        <input id="length" name="length" class="form-control mb-2" value="{{ old('length', $product->length) }}" required>
                                                     </div>
                                                     <!-- Metal Type -->
                                                     <div class="w-100 w-md-200px">
@@ -166,8 +166,8 @@
                                                     </div>
                                                     <!-- Weight per Meter -->
                                                     <div class="w-100 w-md-200px">
-                                                        <label class="form-label">1 metr og‘irligi:</label>
-                                                        <input id="weight_per_meter" name="weight_per_meter" class="form-control mb-2" value="{{ $product->weight_per_meter }}" required readonly style="background-color: #F5F5F7; border: 1px solid #ccc; color: #333;" >
+                                                        <label class="form-label">1 metr og‘irligi</label>
+                                                        <input id="weight_per_meter" name="weight_per_meter" class="form-control mb-2" value="{{ old('weight_per_meter', $product->weight_per_meter) }}" required readonly style="background-color: #F5F5F7; border: 1px solid #ccc; color: #333;">
                                                     </div>
                                                 </div>
                                             </div>
@@ -236,13 +236,12 @@
             // Calculate weight per meter
             const weightPerMeter = (packageWeight / itemsPerPackage / length).toFixed(6); // 1 metr og‘irligi
             document.getElementById('weight_per_meter').value = weightPerMeter;
-
-            // Display calculated values in full sentences
-
-
-            // Display the full formatted result
-            document.getElementById('calculated_values').innerText = resultText;
         }
+
+        // Sahifa yuklanganda hisob-kitoblarni avtomatik bajarish
+        document.addEventListener('DOMContentLoaded', function() {
+            calculateValues(); // Sahifa yuklanganda darhol hisobla
+        });
 
         // Add event listeners for real-time calculation
         document.getElementById('price_per_ton').addEventListener('input', calculateValues);
@@ -252,8 +251,5 @@
         document.getElementById('package_weight').addEventListener('input', calculateValues);
     </script>
 
-    <!-- HTML Section to display the result -->
-    <div id="calculated_values" class="mt-5">
-        <!-- This will dynamically display the full calculated values in the format you want -->
-    </div>
+
 @endsection
