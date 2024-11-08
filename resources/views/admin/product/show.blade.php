@@ -1,6 +1,7 @@
+
 @extends('layouts.admin')
 @section('title')
-     Mahsulot haqida
+    Mahsulot haqida
 @endsection
 @section('style')
     <style>
@@ -225,10 +226,10 @@
                 </div>
                 <!--end::Page title-->
                 <!--begin::Actions-->
-{{--                <div class="d-flex align-items-center gap-2 gap-lg-3">--}}
-{{--                    <button type="submit" class="btn btn-sm btn-primary">S</button>--}}
-{{--                    <!--end::Primary button-->--}}
-{{--                </div>--}}
+                {{--                <div class="d-flex align-items-center gap-2 gap-lg-3">--}}
+                {{--                    <button type="submit" class="btn btn-sm btn-primary">S</button>--}}
+                {{--                    <!--end::Primary button-->--}}
+                {{--                </div>--}}
                 <!--end::Actions-->
             </div>
             <!--end::Container-->
@@ -266,8 +267,8 @@
                                         <h2>General</h2>
                                     </div> -->
                                 </div>
-                                <!--end::Card header-->
-                                <!--begin::Card body-->
+
+
                                 <div class="card-body pt-0">
                                     <div class="product-info">
 
@@ -294,42 +295,42 @@
                                                 <h3>Qiymaatlari</h3>
 
                                                 @if($product->items_per_package)
-                                                <p><strong> pochkalar soni:</strong> {{$product->items_per_package}} ta</p>
+                                                    <p><strong> pochkalar soni:</strong> {{$product->items_per_package}} ta</p>
                                                 @endif
 
                                                 @if($product->total_units)
-                                                <p><strong>umumi donalar soni:</strong> {{$product->total_units}} ta</p>
+                                                    <p><strong>umumi donalar soni:</strong> {{$product->total_units}} ta</p>
                                                 @endif
                                                 @if($product->package_weight)
-                                                <p><strong>1 pochkaning og'irligi:</strong> {{$product->package_weight}} Tonna</p>
+                                                    <p><strong>1 pochkaning og'irligi:</strong> {{$product->package_weight}} Tonna</p>
                                                 @endif
 
                                                 @if($product->package_length)
-                                                <p><strong>1 pochka uzunligi:</strong> {{$product->package_length}} metr</p>
+                                                    <p><strong>1 pochka uzunligi:</strong> {{$product->package_length}} metr</p>
                                                 @endif
 
                                                 @if($product->weight_per_meter)
-                                                <p><strong>1 metr og'irligi:</strong> {{$product->weight_per_meter}} tonna</p>
+                                                    <p><strong>1 metr og'irligi:</strong> {{$product->weight_per_meter}} tonna</p>
                                                 @endif
 
                                                 @if($product->weight_per_item)
-                                                <p><strong>1 dona og'irligi:</strong> {{$product->weight_per_item}} tonna</p>
+                                                    <p><strong>1 dona og'irligi:</strong> {{$product->weight_per_item}} tonna</p>
                                                 @endif
 
                                                 @if($product->grains_package)
-                                                <p><strong>Donalarning pochkadagi soni:</strong> {{$product->grains_package}} ta</p>
+                                                    <p><strong>Donalarning pochkadagi soni:</strong> {{$product->grains_package}} ta</p>
                                                 @endif
 
                                                 @if($product->total_packages)
-                                                <p><strong>Ombordagi jami pochkalar soni:</strong> {{$product->total_packages}} ta</p>
+                                                    <p><strong>Ombordagi jami pochkalar soni:</strong> {{$product->total_packages}} ta</p>
                                                 @endif
 
                                                 @if($product->items_in_package)
-                                                <p><strong>Pochkadagi mavjud donalar soni:</strong> {{$product->items_in_package}} ta</p>
+                                                    <p><strong>Pochkadagi mavjud donalar soni:</strong> {{$product->items_in_package}} ta</p>
                                                 @endif
 
                                                 @if($product->total_weight)
-                                                <p><strong>Jami og'irligi:</strong> {{$product->total_weight}} Tonna</p>
+                                                    <p><strong>Jami og'irligi:</strong> {{$product->total_weight}} Tonna</p>
                                                 @endif
                                             </div>
 
@@ -337,19 +338,19 @@
                                         <div>
                                             <h2>Qoldiq</h2>
                                             <form id="product-form" action="{{ route('product.addPackage', $product->id) }}" method="POST"
-                                                enctype="multipart/form-data" class="stock-info">
+                                                  enctype="multipart/form-data" class="stock-info">
                                                 @csrf
                                                 @method("PUT")
                                                 <div class="stock-details">
                                                     <div>
                                                         <label for="pochkalar">Pochkalar soni</label>
                                                         <input name="items_per_package" type="text" id="pochkalar"
-                                                            value="{{$product->items_per_package}}">
+                                                               value="{{$product->items_per_package}}">
                                                     </div>
                                                     <div>
                                                         <label for="pochkada-dona">Pochkada donalar soni</label>
                                                         <input type="text" name="total_packages" id="pochkada-dona"
-                                                            value="{{$product->total_packages}}">
+                                                               value="{{$product->total_packages}}">
                                                     </div>
                                                     <div>
                                                         <label for="aloqida-dona">Alohida dona</label>
@@ -551,38 +552,37 @@
                 </div>
 
             </div>
+        </div>
     </div>
 
 
-@endsection
-@section('scripts')
+        @endsection
+        @section('scripts')
 
-    <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            const tabs = document.querySelectorAll('.tab');
-            const productInfo = document.querySelector('.product-info');
-            const salesHistory = document.querySelector('#sales-history');
+            <script>
+                document.addEventListener("DOMContentLoaded", function () {
+                    const tabs = document.querySelectorAll('.tab');
+                    const productInfo = document.querySelector('.product-info');
+                    const salesHistory = document.querySelector('#sales-history');
 
-            tabs.forEach(tab => {
-                tab.addEventListener('click', function () {
-                    // Remove 'active' class from all tabs
-                    tabs.forEach(t => t.classList.remove('active'));
-                    this.classList.add('active');
+                    tabs.forEach(tab => {
+                        tab.addEventListener('click', function () {
+                            // Remove 'active' class from all tabs
+                            tabs.forEach(t => t.classList.remove('active'));
+                            this.classList.add('active');
 
-                    // Toggle sections visibility
-                    if (this.textContent.includes('Mahsulot haqida')) {
-                        productInfo.classList.remove('hidden');
-                        salesHistory.classList.add('hidden');
-                    } else if (this.textContent.includes('Sotuv tarixi')) {
-                        productInfo.classList.add('hidden');
-                        salesHistory.classList.remove('hidden');
-                        loadSalesHistory(); // Load sales history data dynamically
-                    }
+                            // Toggle sections visibility
+                            if (this.textContent.includes('Mahsulot haqida')) {
+                                productInfo.classList.remove('hidden');
+                                salesHistory.classList.add('hidden');
+                            } else if (this.textContent.includes('Sotuv tarixi')) {
+                                productInfo.classList.add('hidden');
+                                salesHistory.classList.remove('hidden');
+                                loadSalesHistory(); // Load sales history data dynamically
+                            }
+                        });
+                    });
+
                 });
-            });
-
-        });
-    </script>
+            </script>
 @endsection
-
-

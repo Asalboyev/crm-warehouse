@@ -47,7 +47,7 @@ class ProductController extends Controller
         $input = $request->all();
         $fieldsToConvert = [
             'price_per_ton', 'length_per_ton', 'price_per_meter',
-            'price_per_item', 'price_per_package', 'items_per_package',
+            'price_per_item', 'price_per_package', 'total_packages',
             'package_weight', 'package_length', 'weight_per_item', 'weight_per_meter'
         ];
 
@@ -70,14 +70,17 @@ class ProductController extends Controller
             'price_per_meter' => 'required|numeric',
             'price_per_item' => 'required|numeric',
             'price_per_package' => 'required|numeric',
-            'items_per_package' => 'required|numeric', // Number of items per package
+            'total_packages' => 'required|numeric', // Number of total packages
             'package_weight' => 'required|numeric',
             'package_length' => 'required|numeric',
             'weight_per_meter' => 'required|numeric',
         ]);
 
-        // Calculate the total units (total items across packages)
-        $total_units = $validatedData['items_per_package']; // Base calculation
+        // Set items_per_package to 0 if it's not provided in the request
+        $validatedData['items_per_package'] = $input['items_per_package'] ?? 0;
+
+        // Calculate the total units (total items across all packages)
+        $total_units = $validatedData['total_packages'];
 
         if (!empty($input['packages_count'])) {
             // If package count is provided, calculate total units
@@ -266,38 +269,115 @@ class ProductController extends Controller
 //        ]);
 //        return redirect()->route('product.index')->with('message', 'Mahsulot qoldiqlar qoshildi');
 //    }
+//    public function addPackage(Request $request, $id)
+//    {
+//        // Validate incoming request
+//        $validated = $request->validate([
+//            'items_per_package' => 'required|integer|min:0', // Allow zero if no packages are added
+//            'total_units' => 'required|integer|min:0', // Allow zero if no units are added
+//            'total_packages' => 'required|integer|min:0', // Allow zero if no packages are added
+//            'total_weight' => 'required|numeric|min:0', // Allow zero if no weight is added
+//        ]);
+//
+//        // Find the product
+//        $product = Product::findOrFail($id);
+//
+//        // Update stock information directly by adding the new quantities
+//        $product->items_per_package += $validated['items_per_package'];
+//        $product->total_units += $validated['total_units'];
+//        $product->total_packages += $validated['total_packages'];
+//        $product->total_weight += $validated['total_weight'];
+//        $product->save();
+//
+//        // Log turnover for 'kirim' (incoming) type
+//        Turnover::create([
+//            'product_id' => $product->id,
+//            'user_id' => auth()->id(),
+//            'type' => 'kirim', // 'kirim' for incoming stock
+//            'quantity_pack' => $validated['items_per_package'], // Quantity of packages added
+//            'quantity_piece' => $validated['total_units'], // Quantity of individual units added
+//            'total_weight' => $validated['total_weight'], // Total weight added
+//        ]);
+//
+//        return redirect()->route('product.index')->with('message', 'Mahsulot qoldiqlar qoshildi');
+//    }
+
+//    public function addPackage(Request $request, $id)
+//    {
+//        // Validate incoming request for adding packages and units
+//        $validated = $request->validate([
+//            'add_packages' => 'nullable|integer|min:0', // Allow adding packages
+//            'add_units' => 'nullable|integer|min:0', // Allow adding individual units
+//        ]);
+//
+//        // Find the product
+//        $product = Product::findOrFail($id);
+//
+//        // Update stock information by adding new quantities if provided
+//        if (isset($validated['add_packages'])) {
+//            $product->total_packages += $validated['add_packages'];
+//        }
+//
+//        if (isset($validated['add_units'])) {
+//            $product->total_units += $validated['add_units'];
+//        }
+//
+//        $product->save();
+//
+//        // Log turnover for 'kirim' (incoming) type if there are additions
+//        Turnover::create([
+//            'product_id' => $product->id,
+//            'user_id' => auth()->id(),
+//            'type' => 'kirim', // 'kirim' for incoming stock
+//            'quantity_pack' => $validated['add_packages'] ?? 0, // Quantity of packages added
+//            'quantity_piece' => $validated['add_units'] ?? 0, // Quantity of individual units added
+////            'total_weight' => $product->total_weight, // Total weight remains the same
+//        ]);
+//
+//        return redirect()->route('product.index')->with('message', 'Mahsulot qoldiqlar qo\'shildi');
+//    }
     public function addPackage(Request $request, $id)
     {
-        // Validate incoming request
+        // Validate incoming request for adding packages and units
         $validated = $request->validate([
-            'items_per_package' => 'required|integer|min:0', // Allow zero if no packages are added
-            'total_units' => 'required|integer|min:0', // Allow zero if no units are added
-            'total_packages' => 'required|integer|min:0', // Allow zero if no packages are added
-            'total_weight' => 'required|numeric|min:0', // Allow zero if no weight is added
+            'items_per_package' => 'nullable|integer|min:0', // Allow adding packages
+            'total_units' => 'nullable|integer|min:0', // Allow adding individual units
         ]);
 
-        // Find the product
+        // Find the product by ID
         $product = Product::findOrFail($id);
 
-        // Update stock information directly by adding the new quantities
-        $product->items_per_package += $validated['items_per_package'];
-        $product->total_units += $validated['total_units'];
-        $product->total_packages += $validated['total_packages'];
-        $product->total_weight += $validated['total_weight'];
+        // Update the total number of packages and units independently
+        if (isset($validated['items_per_package'])) {
+            $product->items_per_package += $validated['items_per_package'];
+        }
+
+        if (isset($validated['total_units'])) {
+            $product->total_units += $validated['total_units'];
+        }
+
+        // Calculate total weight:
+        // Total weight = (number of packages * weight per package) + (number of units * weight per unit)
+        $product->total_weight = ($product->total_packages * $product->package_weight)
+            + ($product->total_units * $product->weight_per_meter);
+
+        // Save the updated product information
         $product->save();
 
-        // Log turnover for 'kirim' (incoming) type
+        // Log turnover for 'kirim' (incoming stock) type if there are additions
         Turnover::create([
             'product_id' => $product->id,
             'user_id' => auth()->id(),
-            'type' => 'kirim', // 'kirim' for incoming stock
-            'quantity_pack' => $validated['items_per_package'], // Quantity of packages added
-            'quantity_piece' => $validated['total_units'], // Quantity of individual units added
-            'total_weight' => $validated['total_weight'], // Total weight added
+            'type' => 'kirim', // Type 'kirim' for added stock
+            'quantity_pack' => $validated['items_per_package'] ?? 0, // Quantity of packages added
+            'quantity_piece' => $validated['total_units'] ?? 0, // Quantity of individual units added
+            'total_weight' => $product->total_weight, // Update total weight based on additions
         ]);
 
-        return redirect()->route('product.index')->with('message', 'Mahsulot qoldiqlar qoshildi');
+        // Redirect back to the product index page with a success message
+        return redirect()->route('product.index')->with('message', 'Mahsulot qoldiqlar qo\'shildi');
     }
+
 
 
 

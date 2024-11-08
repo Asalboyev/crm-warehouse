@@ -19,6 +19,7 @@ return new class extends Migration
             $table->integer('quantity_piece')->default(0); // Individual unit quantity
             $table->decimal('total_weight', 10, 2)->default(0); // Total weight in tons
             $table->timestamps();
+
         });
     }
 

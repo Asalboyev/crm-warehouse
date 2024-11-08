@@ -167,7 +167,7 @@
                                                     <!-- Items per Package -->
                                                     <div class="w-100 w-md-200px">
                                                         <label class="form-label">1 pochkadagi soni:</label>
-                                                        <input id="items_per_package" name="items_per_package" class="form-control mb-2" placeholder="1 pochkadagi soni:" required>
+                                                        <input id="total_packages" name="total_packages" class="form-control mb-2" placeholder="1 pochkadagi soni:" required>
                                                     </div>
                                                     <!-- Package Weight -->
                                                     <div class="w-100 w-md-200px">
@@ -214,7 +214,7 @@
         const pricePerTon = parseFloat(document.getElementById('price_per_ton').value) || 0; // 1 tonna narxi
         const lengthPerTon = parseFloat(document.getElementById('length_per_ton').value) || 0; // 1 tonna uzunligi
         const length = parseFloat(document.getElementById('length').value) || 0; // Uzunligi
-        const itemsPerPackage = parseFloat(document.getElementById('items_per_package').value) || 0; // 1 pochkadagi soni
+        const itemsPerPackage = parseFloat(document.getElementById('total_packages').value) || 0; // 1 pochkadagi soni
         const packageWeight = parseFloat(document.getElementById('package_weight').value) || 0; // 1 pochkaning og‘irligi
 
         // Calculate price per meter
@@ -248,7 +248,7 @@
     document.getElementById('price_per_ton').addEventListener('input', calculateValues);
     document.getElementById('length_per_ton').addEventListener('input', calculateValues);
     document.getElementById('length').addEventListener('input', calculateValues);
-    document.getElementById('items_per_package').addEventListener('input', calculateValues);
+    document.getElementById('total_packages').addEventListener('input', calculateValues);
     document.getElementById('package_weight').addEventListener('input', calculateValues);
 </script>
 

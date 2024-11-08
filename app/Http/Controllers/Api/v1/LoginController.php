@@ -14,35 +14,66 @@ use App\Models\User;
 class LoginController extends Controller
 {
    // LoginController.php
-   public function login(Request $request)
-   {
-       $credentials = $request->validate([
-           'email' => 'required|string|email',
-           'password' => 'required|string',
-       ]);
+//   public function login(Request $request)
+//   {
+//       $credentials = $request->validate([
+//           'email' => 'required|string|email',
+//           'password' => 'required|string',
+//       ]);
+//
+//       if (Auth::attempt($credentials)) {
+//           $user = Auth::user();
+//           $accessToken = $user->createToken('access_token')->plainTextToken; // Create access token
+//           $refreshToken = Str::random(60); // Generate a random refresh token
+//
+//           // Store the refresh token in the database
+//           $user->tokens()->updateOrCreate(
+//               ['name' => 'refresh_token'],
+//               ['token' => hash('sha256', $refreshToken)]
+//           );
+//
+//           return response()->json([
+//               'access_token' => $accessToken, // Return access token
+//               'refresh_token' => $refreshToken, // Return refresh token
+//               'role' => $user->role ?? 'No role',
+//               'redirect_url' => url('dashboard'),
+//           ]);
+//       }
+//
+//       return response()->json(['message' => 'Unauthorized'], 401);
+//   }
+    public function login(Request $request)
+    {
+        $credentials = $request->validate([
+            'email' => 'required|string|email',
+            'password' => 'required|string',
+        ]);
 
-       if (Auth::attempt($credentials)) {
-           $user = Auth::user();
-           $accessToken = $user->createToken('access_token')->plainTextToken; // Create access token
-           $refreshToken = Str::random(60); // Generate a random refresh token
+        if (Auth::attempt($credentials)) {
+            $user = Auth::user();
+            $accessToken = $user->createToken('access_token')->plainTextToken;
+            $refreshToken = Str::random(60);
 
-           // Store the refresh token in the database
-           $user->tokens()->updateOrCreate(
-               ['name' => 'refresh_token'],
-               ['token' => hash('sha256', $refreshToken)]
-           );
+            // Token yaratish vaqtini saqlash va amal qilish muddatini 1 minutga o‘rnatish
+            $user->tokens()->updateOrCreate(
+                ['name' => 'refresh_token'],
+                [
+                    'token' => hash('sha256', $refreshToken),
+                    'created_at' => Carbon::now(),
+                    'expires_at' => Carbon::now()->addMinute(1) // Amal qilish muddati: 1 minut
+                ]
+            );
 
-           return response()->json([
-               'access_token' => $accessToken, // Return access token
-               'refresh_token' => $refreshToken, // Return refresh token
-               'role' => $user->role ?? 'No role',
-               'redirect_url' => url('dashboard'),
-           ]);
-       }
+            return response()->json([
+                'access_token' => $accessToken,
+                'refresh_token' => $refreshToken,
+                'role' => $user->role ?? 'No role',
+                'redirect_url' => url('dashboard'),
+            ]);
+        }
 
-       return response()->json(['message' => 'Unauthorized'], 401);
-   }
-
+        return response()->json(['message' => 'Unauthorized'], 401);
+    }
 
 
     public function refresh(Request $request)

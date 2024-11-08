@@ -7,6 +7,7 @@ use App\Models\Product;
 use Illuminate\Http\Request;
 use App\Models\Category;
 use App\Models\Turnover;
+use App\Models\OrderProduct;
 
 class ProductController extends Controller
 {
@@ -35,11 +36,68 @@ class ProductController extends Controller
     }
 
     // View product details (with stock and pricing)
+
     public function show($id)
     {
-        $product = Product::findOrFail($id);
-        return response()->json(compact('product'));
+        // Retrieve categories
+        $categories = Category::all();
+
+        // Retrieve product by ID
+        $product = Product::find($id);
+        if (!$product) {
+            return response()->json(['error' => 'Mahsulot topilmadi!'], 404);
+        }
+
+        // Retrieve sales details related to the product
+        $salesDetails = OrderProduct::with(['order.user', 'order.client'])
+            ->where('product_id', $id)
+            ->get()
+            ->map(function ($orderProduct) {
+                $order = $orderProduct->order;
+
+                return [
+                    'order_id' => $order ? $order->id : null,
+                    'sold_to_id' => $order ? optional($order->client)->id : null,
+                    'sold_to' => $order ? optional($order->client)->name : 'Ma\'lumot yo\'q',
+                    'sold_to_phone' => $order ? optional($order->client)->phone : 'Ma\'lumot yo\'q',
+                    'sold_by_id' => $order ? optional($order->user)->id : null,
+                    'sold_by' => $order ? optional($order->user)->name : 'Ma\'lumot yo\'q',
+                    'sold_by_phone' => $order ? optional($order->user)->email : 'Ma\'lumot yo\'q',
+                    'times_sold' => $orderProduct->times_sold,
+                    'quantity_pack' => $orderProduct->quantity_pack,
+                    'quantity_piece' => $orderProduct->quantity_piece,
+                    'total_quantity' => $orderProduct->quantity_pack + $orderProduct->quantity_piece,
+                    'total_weight' => $orderProduct->total_weight,
+                    'total_price' => $orderProduct->total_price,
+                    'price_per_ton' => $orderProduct->price_per_ton,
+                    'price_per_unit' => $orderProduct->price_per_unit,
+                ];
+            });
+
+        // Retrieve turnover details related to the product
+        $turnoverDetails = Turnover::where('product_id', $id)
+            ->with('user')
+            ->get()
+            ->map(function ($turnover) {
+                return [
+                    'type' => $turnover->type,
+                    'date' => $turnover->created_at->format('Y-m-d'),
+                    'quantity_pack' => $turnover->quantity_pack,
+                    'quantity_piece' => $turnover->quantity_piece,
+                    'total_weight' => $turnover->total_weight,
+                    'user_name' => $turnover->user->name ?? 'Ma\'lumot yo\'q',
+                ];
+            });
+
+        // Return response as JSON with product, categories, sales details, and turnover details
+        return response()->json([
+            'product' => $product,
+            'categories' => $categories,
+            'sales_details' => $salesDetails,
+            'turnover_details' => $turnoverDetails,
+        ]);
     }
+
     public function getSklad($id)
     {
 
@@ -89,23 +147,40 @@ class ProductController extends Controller
 //    }
     public function addPackage(Request $request, $id)
     {
+        // Validate incoming request for adding packages and units
+        $validated = $request->validate([
+            'items_per_package' => 'nullable|integer|min:0', // Allow adding packages
+            'total_units' => 'nullable|integer|min:0', // Allow adding individual units
+        ]);
+
+        // Find the product by ID
         $product = Product::findOrFail($id);
 
-        // Update stock information
-        $product->items_per_package += $request->input('items_per_package');
-        $product->total_units += $request->input('total_units');
-        $product->total_packages += $request->input('total_packages');
-        $product->total_weight += $request->input('total_weight');
+        // Update the total number of packages and units independently
+        if (isset($validated['items_per_package'])) {
+            $product->items_per_package += $validated['items_per_package'];
+        }
+
+        if (isset($validated['total_units'])) {
+            $product->total_units += $validated['total_units'];
+        }
+
+        // Calculate total weight:
+        // Total weight = (number of packages * weight per package) + (number of units * weight per unit)
+        $product->total_weight = ($product->total_packages * $product->package_weight)
+            + ($product->total_units * $product->weight_per_meter);
+
+        // Save the updated product information
         $product->save();
 
-        // Log turnover for 'kirim' (incoming) type
+        // Log turnover for 'kirim' (incoming stock) type if there are additions
         Turnover::create([
             'product_id' => $product->id,
             'user_id' => auth()->id(),
-            'type' => 'kirim', // 'kirim' for incoming stock
-            'quantity_pack' => $request->input('items_per_package'),
-            'quantity_piece' => $request->input('total_units'),
-            'total_weight' => $request->input('total_weight'),
+            'type' => 'kirim', // Type 'kirim' for added stock
+            'quantity_pack' => $validated['items_per_package'] ?? 0, // Quantity of packages added
+            'quantity_piece' => $validated['total_units'] ?? 0, // Quantity of individual units added
+            'total_weight' => $product->total_weight, // Update total weight based on additions
         ]);
 
         return response()->json(['message' => 'Packages added', 'product' => $product]);
