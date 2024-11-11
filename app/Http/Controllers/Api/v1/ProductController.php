@@ -149,26 +149,28 @@ class ProductController extends Controller
     {
         // Validate incoming request for adding packages and units
         $validated = $request->validate([
-            'items_per_package' => 'nullable|integer|min:0', // Allow adding packages
+            'total_packages' => 'nullable|integer|min:0', // Allow adding packages
             'total_units' => 'nullable|integer|min:0', // Allow adding individual units
         ]);
 
         // Find the product by ID
         $product = Product::findOrFail($id);
 
-        // Update the total number of packages and units independently
-        if (isset($validated['items_per_package'])) {
-            $product->items_per_package += $validated['items_per_package'];
-        }
+        // Add the new values to the existing package and unit counts
+        $newItemsPerPackage = $validated['total_packages'] ?? 0;
+        $newTotalUnits = $validated['total_units'] ?? 0;
 
-        if (isset($validated['total_units'])) {
-            $product->total_units += $validated['total_units'];
-        }
+        // Update the product's total packages and units
+        $product->total_packages += $newItemsPerPackage;
+        $product->total_units += $newTotalUnits;
 
-        // Calculate total weight:
-        // Total weight = (number of packages * weight per package) + (number of units * weight per unit)
-        $product->total_weight = ($product->total_packages * $product->package_weight)
-            + ($product->total_units * $product->weight_per_meter);
+        // Calculate the new total weight:
+        // Total weight = (total number of packages * weight per package) + (total individual units * weight per unit)
+        $newTotalWeight = ($product->total_packages * $product->package_weight)
+            + ($product->total_units * $product->weight_per_item);
+
+        // Update total_weight for the product
+        $product->total_weight = $newTotalWeight;
 
         // Save the updated product information
         $product->save();
@@ -178,10 +180,11 @@ class ProductController extends Controller
             'product_id' => $product->id,
             'user_id' => auth()->id(),
             'type' => 'kirim', // Type 'kirim' for added stock
-            'quantity_pack' => $validated['items_per_package'] ?? 0, // Quantity of packages added
-            'quantity_piece' => $validated['total_units'] ?? 0, // Quantity of individual units added
-            'total_weight' => $product->total_weight, // Update total weight based on additions
+            'quantity_pack' => $newItemsPerPackage, // Quantity of packages added
+            'quantity_piece' => $newTotalUnits, // Quantity of individual units added
+            'total_weight' => $newTotalWeight, // Weight for added stock only
         ]);
+
 
         return response()->json(['message' => 'Packages added', 'product' => $product]);
     }

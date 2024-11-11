@@ -41,14 +41,136 @@ class ProductController extends Controller
         return view('admin.product.create', compact('categories'));
     }
 
+//    public function store(Request $request)
+//    {
+//        // Preprocess the input to replace commas with dots for numeric fields
+//        $input = $request->all();
+//        $fieldsToConvert = [
+//            'price_per_ton', 'length_per_ton', 'price_per_meter',
+//            'price_per_item', 'price_per_package', 'total_packages',
+//            'package_weight', 'package_length', 'weight_per_item', 'weight_per_meter'
+//        ];
+//
+//        foreach ($fieldsToConvert as $field) {
+//            if (isset($input[$field])) {
+//                $input[$field] = str_replace(',', '.', $input[$field]);
+//            }
+//        }
+//
+//        // Validate the data
+//        $validatedData = $request->validate([
+//            'product_name' => 'required|string|max:255',
+//            'category_id' => 'required|exists:categories,id',
+//            'country' => 'required|string|max:255',
+//            'thickness' => 'required|numeric',
+//            'length' => 'required|numeric',
+//            'metal_type' => 'required|string|max:50',
+//            'price_per_ton' => 'required|numeric',
+//            'length_per_ton' => 'required|numeric',
+//            'price_per_meter' => 'required|numeric',
+//            'price_per_item' => 'required|numeric',
+//            'price_per_package' => 'required|numeric',
+//            'total_packages' => 'required|numeric',
+//            'package_weight' => 'required|numeric',
+//            'package_length' => 'required|numeric',
+//            'weight_per_meter' => 'required|numeric',
+//        ]);
+//
+//        // Set items_per_package to 0 if it's not provided in the request
+//        $validatedData['items_per_package'] = $input['items_per_package'] ?? 0;
+//
+//        // Calculate the weight per item in tons if items_per_package is provided and greater than zero
+//        if ($validatedData['items_per_package'] > 0 && $validatedData['package_weight'] > 0) {
+//            $validatedData['weight_per_item'] = number_format($validatedData['package_weight'] / $validatedData['items_per_package'], 6, '.', '');
+//        } else {
+//            $validatedData['weight_per_item'] = '0.000000'; // Set to zero with fixed precision if items_per_package or package_weight is zero or missing
+//        }
+//
+//        // Calculate the total units (total items across all packages)
+//        $total_units = $validatedData['total_packages'];
+//
+//        if (!empty($input['packages_count'])) {
+//            // If package count is provided, calculate total units
+//            $total_units *= $input['packages_count'];
+//        }
+//
+//        // Add total units to validated data
+//        $validatedData['total_units'] = $total_units;
+//
+//        // Store the product in the database
+//        Product::create($validatedData);
+//
+//        // Redirect back with success message
+//        return redirect()->route('product.index')->with('message', 'Product created successfully!');
+//    }
+
+
+//    public function store(Request $request)
+//    {
+//        // Preprocess the input to replace commas with dots for numeric fields
+//        $input = $request->all();
+//        dd($input);
+//        $fieldsToConvert = [
+//            'price_per_ton', 'length_per_ton', 'price_per_meter',
+//            'price_per_item', 'price_per_package', 'package_weight',
+//            'package_length', 'weight_per_meter'
+//        ];
+//
+//        foreach ($fieldsToConvert as $field) {
+//            if (isset($input[$field])) {
+//                $input[$field] = str_replace(',', '.', $input[$field]);
+//            }
+//        }
+//
+//        // Validate the data
+//        $validatedData = $request->validate([
+//            'product_name' => 'required|string|max:255',
+//            'category_id' => 'required|exists:categories,id',
+//            'country' => 'required|string|max:255',
+//            'thickness' => 'required|numeric',
+//            'length' => 'required|numeric',
+//            'metal_type' => 'required|string|max:50',
+//            'price_per_ton' => 'required|numeric',
+//            'length_per_ton' => 'required|numeric',
+//            'price_per_meter' => 'required|numeric',
+//            'price_per_item' => 'required|numeric',
+//            'price_per_package' => 'required|numeric',
+//            'items_per_package' => 'required|integer',
+//            'package_weight' => 'required|numeric',
+//            'package_length' => 'required|numeric',
+//            'weight_per_meter' => 'required|numeric',
+//        ]);
+//
+//        // Calculate the weight per item if items_per_package and package_weight are provided
+//        if ($validatedData['package_weight'] > 0 && $validatedData['items_per_package'] > 0) {
+//            $validatedData['weight_per_item'] = bcdiv($validatedData['package_weight'], $validatedData['items_per_package'], 6); // Calculate with 6 decimal places
+//        } else {
+//            $validatedData['weight_per_item'] = 0; // Set to zero if items_per_package or package_weight is zero or missing
+//        }
+//
+//        // Calculate total units based on total packages if provided
+//        if (!empty($input['total_packages'])) {
+//            $validatedData['total_units'] = $validatedData['items_per_package'] * $input['total_packages'];
+//        } else {
+//            $validatedData['total_units'] = $validatedData['items_per_package']; // Default to items per package if no total packages are specified
+//        }
+//
+//        // Store the product in the database
+//        Product::create($validatedData);
+//
+//        // Redirect back with success message
+//        return redirect()->route('product.index')->with('message', 'Product created successfully!');
+//    }
+
+
     public function store(Request $request)
     {
         // Preprocess the input to replace commas with dots for numeric fields
         $input = $request->all();
         $fieldsToConvert = [
             'price_per_ton', 'length_per_ton', 'price_per_meter',
-            'price_per_item', 'price_per_package', 'total_packages',
-            'package_weight', 'package_length', 'weight_per_item', 'weight_per_meter'
+            'price_per_item', 'price_per_package', 'package_weight',
+            'package_length', 'weight_per_meter'
         ];
 
         foreach ($fieldsToConvert as $field) {
@@ -70,25 +192,25 @@ class ProductController extends Controller
             'price_per_meter' => 'required|numeric',
             'price_per_item' => 'required|numeric',
             'price_per_package' => 'required|numeric',
-            'total_packages' => 'required|numeric', // Number of total packages
+            'items_per_package' => 'required|integer',
             'package_weight' => 'required|numeric',
             'package_length' => 'required|numeric',
             'weight_per_meter' => 'required|numeric',
         ]);
 
-        // Set items_per_package to 0 if it's not provided in the request
-        $validatedData['items_per_package'] = $input['items_per_package'] ?? 0;
-
-        // Calculate the total units (total items across all packages)
-        $total_units = $validatedData['total_packages'];
-
-        if (!empty($input['packages_count'])) {
-            // If package count is provided, calculate total units
-            $total_units *= $input['packages_count'];
+        // Calculate the weight per item in tons
+        if ($validatedData['package_weight'] > 0 && $validatedData['items_per_package'] > 0) {
+            $validatedData['weight_per_item'] = $validatedData['package_weight'] / $validatedData['items_per_package'];
+        } else {
+            $validatedData['weight_per_item'] = 0;
         }
 
-        // Add total units to validated data
-        $validatedData['total_units'] = $total_units;
+        // Format weight_per_item to six decimal places
+        $validatedData['weight_per_item'] = number_format($validatedData['weight_per_item'], 6, '.', '');
+
+        // Set default values for total_units and total_packages
+        $validatedData['total_units'] = 0;
+        $validatedData['total_packages'] = 0;
 
         // Store the product in the database
         Product::create($validatedData);
@@ -96,57 +218,6 @@ class ProductController extends Controller
         // Redirect back with success message
         return redirect()->route('product.index')->with('message', 'Product created successfully!');
     }
-
-//    public function store(Request $request)
-//    {
-//        // Preprocess the input to replace commas with dots for numeric fields
-//        $input = $request->all();
-//        $input['price_per_ton'] = str_replace(',', '.', $input['price_per_ton']);
-//        $input['length_per_ton'] = str_replace(',', '.', $input['length_per_ton']);
-//        $input['price_per_meter'] = str_replace(',', '.', $input['price_per_meter']);
-//        $input['price_per_item'] = str_replace(',', '.', $input['price_per_item']);
-//        $input['price_per_package'] = str_replace(',', '.', $input['price_per_package']);
-//        $input['items_per_package'] = str_replace(',', '.', $input['items_per_package']);
-//        $input['package_weight'] = str_replace(',', '.', $input['package_weight']);
-//        $input['package_length'] = str_replace(',', '.', $input['package_length']);
-//        $input['weight_per_item'] = str_replace(',', '.', $input['weight_per_item']);
-//
-//        // Validate the data
-//        $validatedData = $request->validate([
-//            'product_name' => 'required|string|max:255',
-//            'category_id' => 'required|exists:categories,id',
-//            'country' => 'required|string|max:255',
-//            'thickness' => 'required|numeric',
-//            'length' => 'required|numeric',
-//            'metal_type' => 'required|string|max:50',
-//            'price_per_ton' => 'required|numeric',
-//            'length_per_ton' => 'required|numeric',
-//            'price_per_meter' => 'required|numeric',
-//            'price_per_item' => 'required|numeric',
-//            'price_per_package' => 'required|numeric',
-//            'items_per_package' => 'required|numeric', // Poshka ichidagi donalar soni
-//            'package_weight' => 'required|numeric',
-//            'package_length' => 'required|numeric',
-//            'weight_per_meter' => 'required|numeric',
-//            'weight_per_item' => 'required|numeric',
-//        ]);
-//
-//        // Umumiy donalar sonini hisoblash
-//        $total_units = $validatedData['items_per_package']; // Faqat bitta poshka qo'shilsa
-//        if (isset($input['packages_count'])) {
-//            $total_units *= $input['packages_count']; // Faqat poshkalar soni bo'yicha ko'paytirish
-//        } else {
-//            $total_units = $validatedData['items_per_package']; // Poshkalar kiritilmagan bo'lsa, alohida bo'ladi
-//        }
-//
-//        // Yangi mahsulot ma'lumotlariga total_units ni qo'shamiz
-//        $validatedData['total_units'] = $total_units;
-//
-//        // Store the product in the database
-//        Product::create($validatedData);
-//
-//        return redirect()->route('product.index')->with('message', 'Product created successfully!');
-//    }
 
 
 
@@ -336,30 +407,76 @@ class ProductController extends Controller
 //
 //        return redirect()->route('product.index')->with('message', 'Mahsulot qoldiqlar qo\'shildi');
 //    }
+
+//    public function addPackage(Request $request, $id)
+//    {
+//        // Validate incoming request for adding packages and units
+//        $validated = $request->validate([
+//            'total_packages' => 'nullable|integer|min:0', // Allow adding packages
+//            'total_units' => 'nullable|integer|min:0', // Allow adding individual units
+//        ]);
+//
+//        // Find the product by ID
+//        $product = Product::findOrFail($id);
+//
+//        // Add the new values to the existing package and unit counts
+//        $newItemsPerPackage = $validated['total_packages'] ?? 0;
+//        $newTotalUnits = $validated['total_units'] ?? 0;
+//
+//        // Update the product's items_per_package and total_units
+//        $product->total_packages += $newItemsPerPackage;
+//        $product->total_units += $newTotalUnits;
+//
+//        // Calculate the new total weight:
+//        // Total weight = (total number of packages * weight per package) + (total individual units * weight per unit)
+//        $product->total_weight = ($product->total_packages * $product->package_weight)
+//            + ($product->total_units * $product->weight_per_meter);
+//
+//        // Save the updated product information
+//        $product->save();
+//
+//        // Log turnover for 'kirim' (incoming stock) type if there are additions
+//        Turnover::create([
+//            'product_id' => $product->id,
+//            'user_id' => auth()->id(),
+//            'type' => 'kirim', // Type 'kirim' for added stock
+//            'quantity_pack' => $newItemsPerPackage, // Quantity of packages added
+//            'quantity_piece' => $newTotalUnits, // Quantity of individual units added
+//            'total_weight' => ($newItemsPerPackage * $product->package_weight)
+//                + ($newTotalUnits * $product->weight_per_meter), // Weight for added stock only
+//        ]);
+//
+//        // Redirect back to the product index page with a success message
+//        return redirect()->route('product.index')->with('message', 'Mahsulot qoldiqlar qo\'shildi');
+//    }
+
+
     public function addPackage(Request $request, $id)
     {
         // Validate incoming request for adding packages and units
         $validated = $request->validate([
-            'items_per_package' => 'nullable|integer|min:0', // Allow adding packages
+            'total_packages' => 'nullable|integer|min:0', // Allow adding packages
             'total_units' => 'nullable|integer|min:0', // Allow adding individual units
         ]);
 
         // Find the product by ID
         $product = Product::findOrFail($id);
 
-        // Update the total number of packages and units independently
-        if (isset($validated['items_per_package'])) {
-            $product->items_per_package += $validated['items_per_package'];
-        }
+        // Add the new values to the existing package and unit counts
+        $newItemsPerPackage = $validated['total_packages'] ?? 0;
+        $newTotalUnits = $validated['total_units'] ?? 0;
 
-        if (isset($validated['total_units'])) {
-            $product->total_units += $validated['total_units'];
-        }
+        // Update the product's total packages and units
+        $product->total_packages += $newItemsPerPackage;
+        $product->total_units += $newTotalUnits;
 
-        // Calculate total weight:
-        // Total weight = (number of packages * weight per package) + (number of units * weight per unit)
-        $product->total_weight = ($product->total_packages * $product->package_weight)
-            + ($product->total_units * $product->weight_per_meter);
+        // Calculate the new total weight:
+        // Total weight = (total number of packages * weight per package) + (total individual units * weight per unit)
+        $newTotalWeight = ($product->total_packages * $product->package_weight)
+            + ($product->total_units * $product->weight_per_item);
+
+        // Update total_weight for the product
+        $product->total_weight = $newTotalWeight;
 
         // Save the updated product information
         $product->save();
@@ -369,16 +486,14 @@ class ProductController extends Controller
             'product_id' => $product->id,
             'user_id' => auth()->id(),
             'type' => 'kirim', // Type 'kirim' for added stock
-            'quantity_pack' => $validated['items_per_package'] ?? 0, // Quantity of packages added
-            'quantity_piece' => $validated['total_units'] ?? 0, // Quantity of individual units added
-            'total_weight' => $product->total_weight, // Update total weight based on additions
+            'quantity_pack' => $newItemsPerPackage, // Quantity of packages added
+            'quantity_piece' => $newTotalUnits, // Quantity of individual units added
+            'total_weight' => $newTotalWeight, // Weight for added stock only
         ]);
 
         // Redirect back to the product index page with a success message
         return redirect()->route('product.index')->with('message', 'Mahsulot qoldiqlar qo\'shildi');
     }
-
-
 
 
 

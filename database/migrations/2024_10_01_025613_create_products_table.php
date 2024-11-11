@@ -16,26 +16,26 @@ return new class extends Migration
             $table->string('product_name');  // Product Name
             $table->foreignId('category_id')->constrained('categories')->onDelete('cascade'); // Category
             $table->string('country'); // Country
-            $table->string('thickness', );  // Thickness (Stenka)
+            $table->decimal('thickness', 8, 3);  // Thickness (Stenka) with three decimal precision
             $table->float('length');  // Length in meters
             $table->string('metal_type');  // Metal Type (Qora/Oq)
-            $table->string('price_per_ton', );  // Price per Ton
-            $table->string('length_per_ton', );  // Length per Ton (meters)
-            $table->string('price_per_meter', );  // Price per Meter
-            $table->string('price_per_item', );  // Price per Item
-            $table->string('price_per_package', );  // Price per Package
-            $table->string('items_per_package');  // Items per Package
-            $table->integer('package_weight', );  // Package Weight in Tons
-            $table->integer('package_length');  // Package Length (meters)
-            $table->integer('weight_per_item',)->nullable();
-            $table->integer('weight_per_meter',);  // Weight per meter
-            $table->integer('total_units',);
-            $table->integer('bron_package',)->nullable();
-            $table->integer('bron_one_pc',)->nullable();
-            $table->integer('grains_package',)->nullable();
-            $table->string('total_packages')->nullable();  // Total Packages in stock
-            $table->integer('items_in_package')->nullable();  // Items available (outside of package)
-            $table->integer('total_weight', )->nullable();
+            $table->decimal('price_per_ton', 12, 2);  // Price per Ton with two decimal precision
+            $table->float('length_per_ton');  // Length per Ton (meters)
+            $table->decimal('price_per_meter', 12, 3);  // Price per Meter with three decimal precision
+            $table->decimal('price_per_item', 12, 3);  // Price per Item
+            $table->decimal('price_per_package', 12, 2);  // Price per Package with two decimal precision
+            $table->string('items_per_package')->nullable();  // Items per Package
+            $table->float('package_weight');  // Package Weight in Tons
+            $table->float('package_length');  // Package Length (meters)
+            $table->decimal('weight_per_item', 12, 6)->nullable();  // Weight per item in tons with six decimal precision
+            $table->decimal('weight_per_meter', 12, 6);  // Weight per meter
+            $table->integer('total_units');  // Total units (total items across all packages)
+            $table->integer('bron_package')->nullable();  // Reserved packages
+            $table->integer('bron_one_pc')->nullable();  // Reserved single items
+            $table->integer('grains_package')->nullable();  // Grains per package (if applicable)
+            $table->integer('total_packages')->nullable();  // Total packages in stock
+            $table->integer('items_in_package')->nullable();  // Loose items (outside of package)
+            $table->decimal('total_weight', 12, 3)->nullable();  // Total weight of all packages/items
             $table->timestamps();
         });
 
