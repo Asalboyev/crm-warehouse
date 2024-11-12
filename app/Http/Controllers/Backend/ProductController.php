@@ -210,7 +210,7 @@ class ProductController extends Controller
 
         // Set default values for total_units and total_packages
         $validatedData['total_units'] = 0;
-        $validatedData['total_packages'] = 0;
+        $validatedData['total_packages'] = 5; // Set total_packages to 5 by default
 
         // Store the product in the database
         Product::create($validatedData);
