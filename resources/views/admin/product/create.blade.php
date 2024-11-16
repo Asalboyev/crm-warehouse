@@ -128,6 +128,7 @@
                                                         <label class="form-label">1 tonna narxi</label>
                                                         <input id="price_per_ton" name="price_per_ton" class="form-control mb-2" placeholder="1 tonna narxi" required>
                                                     </div>
+
                                                     <!-- Length per Ton -->
                                                     <div class="w-100 w-md-200px">
                                                         <label class="form-label">1 tonna uzunligi:</label>
@@ -208,7 +209,17 @@
 @endsection
 @section('scripts')
 
+
 <script>
+    document.getElementById('price_per_ton').addEventListener('blur', function() {
+        let value = this.value.trim();
+
+        // Check if the value is numeric and doesn't already have decimals
+        if (value && !value.includes('.') && !isNaN(value)) {
+            this.value = parseFloat(value).toFixed(2); // Add two decimal places
+        }
+    });
+
     // Function to calculate and display values
     function calculateValues() {
         const pricePerTon = parseFloat(document.getElementById('price_per_ton').value) || 0; // 1 tonna narxi

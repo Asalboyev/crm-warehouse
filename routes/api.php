@@ -31,9 +31,10 @@ Route::prefix('v1')->group(function () {
     Route::post('login', [LoginController::class, 'login']);
     Route::post('refresh', [LoginController::class, 'refresh']);
     Route::post('logout', [LoginController::class, 'logout'])->middleware('auth:sanctum');
+
     Route::middleware(['auth:sanctum', 'role:admin,seller'])->group(function () {
 
-        Route::get('profile', [CustomersController::class, 'me']);
+//        Route::get('profile', [CustomersController::class, 'me']);
 
         Route::get('customers', [CustomersController::class, 'apiIndex'])->name('api.customers.index');
         Route::get('customer/{id}', [CustomersController::class, 'apiShow'])->name('api.customer.show');
@@ -42,7 +43,7 @@ Route::prefix('v1')->group(function () {
         Route::post('orders', [OrderController::class, 'store']);
         Route::get('orders/{order}', [OrderController::class, 'show']);
         Route::get('orders', [OrderController::class, 'index']);
-        Route::put('/orders/{order}', [OrderController::class, 'update']);
+//        Route::put('/orders/{order}', [OrderController::class, 'update']);
 
         Route::get('products', [ProductController::class, 'index'])->name('products.index');
         Route::get('products/{id}', [ProductController::class, 'show'])->name('products.show');
@@ -55,8 +56,14 @@ Route::prefix('v1')->group(function () {
     });
     Route::middleware(['auth:sanctum', 'role:admin,seller,warehouseman,guard'])->group(function () {
             Route::get('orders', [OrderController::class, 'index']);
-//            Route::put('/orders/{order}', [OrderController::class, 'update']);
-           Route::put('orders/{id}/update', [OrderController::class, 'update_status']);
+            Route::put('orders/{id}/update', [OrderController::class, 'update_status']);
+            Route::post('/products/{id}/photos', [ProductController::class, 'addPhotos']);
+            Route::delete('/photos/{photoId}', [ProductController::class, 'deletePhoto']);
+            Route::put('/orders/{order}', [OrderController::class, 'update']);
+            Route::get('profile', [CustomersController::class, 'me']);
+            Route::get('customers', [CustomersController::class, 'apiIndex'])->name('api.customers.index');
+            Route::get('customer/{id}', [CustomersController::class, 'apiShow'])->name('api.customer.show');
+
 
         Route::middleware(['role:admin,seller'])->group(function () {
                 Route::get('products/{id}/sklad', [ProductController::class, 'getSklad']);

@@ -17,64 +17,128 @@ use App\Models\Turnover;
 
 class OrderController extends Controller
 {
-    // List all orders
-    // public function index(Request $request)
-    // {
-    //     // Buyurtmalarni olish uchun asosiy so'rov
-    //     $query = Order::with(['user', 'client', 'orderProducts.product']);
 
-    //     // Statusni tekshirish
-    //     if ($request->has('status')) {
-    //         // Statusni olish va kichik/katta harfga moslash
-    //         $statusName = strtolower($request->get('status'));
 
-    //         // Statusni ID yoki nom orqali olish
-    //         $status = Status::where('name', $statusName)->orWhere('id', $statusName)->first();
+//    public function index(Request $request)
+//    {
+//        // Base query for retrieving orders
+//        $query = Order::with(['user', 'client', 'orderProducts.product']); // Eager-load relationships except statuses
+//
+//        // Check for status filter
+//        if ($request->has('status')) {
+//            $statusName = strtolower($request->get('status'));
+//
+//            // Retrieve status by name or ID
+//            $status = Status::where('name', $statusName)->orWhere('id', $statusName)->first();
+//
+//            if ($status) {
+//                // Filter orders by status
+//                $query->whereHas('statuses', function ($q) use ($status) {
+//                    $q->where('status_id', $status->id);
+//                });
+//            }
+//        } else {
+//            $query->where('id', '!=', 1);
+//        }
+//
+//        // Additional filters
+//        if ($request->has('user_name')) {
+//            $query->whereHas('user', function ($q) use ($request) {
+//                $q->where('name', 'like', '%' . $request->user_name . '%');
+//            });
+//        }
+//
+//        if ($request->has('client_name')) {
+//            $query->whereHas('client', function ($q) use ($request) {
+//                $q->where('name', 'like', '%' . $request->client_name . '%');
+//            });
+//        }
+//
+//        if ($request->has('order_id')) {
+//            $query->where('id', $request->order_id);
+//        }
+//
+//        if ($request->has('car_number')) {
+//            $query->whereHas('client', function ($q) use ($request) {
+//                $q->where('car_number', 'like', '%' . $request->car_number . '%');
+//            });
+//        }
+//
+//        if ($request->has('order_date')) {
+//            $query->whereDate('created_at', $request->order_date);
+//        }
+//
+//        // Retrieve the orders
+//        $orders = $query->get();
+//
+//        // Transform each order to include the user, client, orderProducts, and single status ID
+//        $orders = $orders->map(function ($order) {
+//            return [
+//                'id' => $order->id,
+//                'user_id' => $order->user_id,
+//                'client_id' => $order->client_id,
+//                'total_price' => $order->total_price,
+//                'total_weight' => $order->total_weight,
+//                'car_number' => $order->client->car_number ?? null,
+//                'photos' => $order->photos,
+//                'status' => optional($order->statuses->first())->id, // Get the first status ID only
+//                'created_at' => $order->created_at,
+//                'updated_at' => $order->updated_at,
+//                'user' => $order->user, // Include user details
+//                'client' => $order->client, // Include client details
+//                'order_products' => $order->orderProducts->map(function ($orderProduct) {
+//                    return [
+//                        'id' => $orderProduct->id,
+//                        'order_id' => $orderProduct->order_id,
+//                        'product_id' => $orderProduct->product_id,
+//                        'quantity_pack' => $orderProduct->quantity_pack,
+//                        'quantity_piece' => $orderProduct->quantity_piece,
+//                        'price_per_ton' => $orderProduct->price_per_ton,
+//                        'price_per_unit' => $orderProduct->price_per_unit,
+//                        'total_price' => $orderProduct->total_price,
+//                        'total_weight' => $orderProduct->total_weight,
+//                        'times_sold' => $orderProduct->times_sold,
+//                        'is_returned' => $orderProduct->is_returned,
+//                        'sold_by_user_id' => $orderProduct->sold_by_user_id,
+//                        'created_at' => $orderProduct->created_at,
+//                        'updated_at' => $orderProduct->updated_at,
+//                        'product' => [
+//                            'id' => $orderProduct->product->id,
+//                            'product_name' => $orderProduct->product->product_name,
+//                            'category_id' => $orderProduct->product->category_id,
+//                            'country' => $orderProduct->product->country,
+//                            'thickness' => $orderProduct->product->thickness,
+//                            'length' => $orderProduct->product->length,
+//                            'metal_type' => $orderProduct->product->metal_type,
+//                            'price_per_ton' => $orderProduct->product->price_per_ton,
+//                            'length_per_ton' => $orderProduct->product->length_per_ton,
+//                            'price_per_meter' => $orderProduct->product->price_per_meter,
+//                            'price_per_item' => $orderProduct->product->price_per_item,
+//                            'price_per_package' => $orderProduct->product->price_per_package,
+//                            'total_packages' => $orderProduct->product->total_packages,
+//                            'package_weight' => $orderProduct->product->package_weight,
+//                            'package_length' => $orderProduct->product->package_length,
+//                            'weight_per_item' => $orderProduct->product->weight_per_item,
+//                            'weight_per_meter' => $orderProduct->product->weight_per_meter,
+//                            'total_units' => $orderProduct->product->total_units,
+//                            'bron_package' => $orderProduct->product->bron_package,
+//                            'bron_one_pc' => $orderProduct->product->bron_one_pc,
+//                            'grains_package' => $orderProduct->product->grains_package,
+//                            'total_packages' => $orderProduct->product->total_packages,
+//                            'items_in_package' => $orderProduct->product->items_in_package,
+//                            'total_weight' => $orderProduct->product->total_weight,
+//                            'created_at' => $orderProduct->product->created_at,
+//                            'updated_at' => $orderProduct->product->updated_at,
+//                        ],
+//                    ];
+//                }),
+//            ];
+//        });
+//
+//        return response()->json($orders, 200);
+//    }
 
-    //         if ($status) {
-    //             // Agar status topilsa, ushbu statusga mos buyurtmalarni olish
-    //             $query->whereHas('statuses', function ($q) use ($status) {
-    //                 $q->where('status_id', $status->id);
-    //             });
-    //         }
-    //     } else {
-    //         // Status berilmagan bo'lsa, ID 1 bo'lmagan barcha buyurtmalarni chiqaramiz
-    //         $query->where('id', '!=', 1);
-    //     }
 
-    //     // Qo'shimcha filtrlar
-    //     if ($request->has('user_name')) {
-    //         $query->whereHas('user', function ($q) use ($request) {
-    //             $q->where('name', 'like', '%' . $request->user_name . '%');
-    //         });
-    //     }
-
-    //     if ($request->has('client_name')) {
-    //         $query->whereHas('client', function ($q) use ($request) {
-    //             $q->where('name', 'like', '%' . $request->client_name . '%');
-    //         });
-    //     }
-
-    //     if ($request->has('order_id')) {
-    //         $query->where('id', $request->order_id);
-    //     }
-
-    //     // Avtomobil raqamiga ko'ra qidirish
-    //     if ($request->has('car_number')) {
-    //         $query->whereHas('client', function ($q) use ($request) {
-    //             $q->where('car_number', 'like', '%' . $request->car_number . '%');
-    //         });
-    //     }
-
-    //     if ($request->has('order_date')) {
-    //         $query->whereDate('created_at', $request->order_date);
-    //     }
-
-    //     // Natijalarni olish
-    //     $orders = $query->get();
-
-    //     return response()->json($orders, 200);
-    // }
     public function index(Request $request)
     {
         // Base query for retrieving orders
@@ -92,108 +156,86 @@ class OrderController extends Controller
                 $query->whereHas('statuses', function ($q) use ($status) {
                     $q->where('status_id', $status->id);
                 });
+
+                // Get the count of orders for this status
+                $orderCount = $query->count();
+
+                // Return the count along with order details
+                return response()->json([
+                    'status_id' => $status->id,
+                    'order_count' => $orderCount,
+                    'orders' => $query->get()->map(function ($order) {
+                        return [
+                            'id' => $order->id,
+                            'user_id' => $order->user_id,
+                            'client_id' => $order->client_id,
+                            'total_price' => $order->total_price,
+                            'total_weight' => $order->total_weight,
+                            'car_number' => $order->client->car_number ?? null,
+                            'photos' => $order->photos,
+                            'status' => optional($order->statuses->first())->id,
+                            'created_at' => $order->created_at,
+                            'updated_at' => $order->updated_at,
+                            'user' => $order->user,
+                            'client' => $order->client,
+                            'order_products' => $order->orderProducts->map(function ($orderProduct) {
+                                return [
+                                    'id' => $orderProduct->id,
+                                    'order_id' => $orderProduct->order_id,
+                                    'product_id' => $orderProduct->product_id,
+                                    'quantity_pack' => $orderProduct->quantity_pack,
+                                    'quantity_piece' => $orderProduct->quantity_piece,
+                                    'price_per_ton' => $orderProduct->price_per_ton,
+                                    'price_per_unit' => $orderProduct->price_per_unit,
+                                    'total_price' => $orderProduct->total_price,
+                                    'total_weight' => $orderProduct->total_weight,
+                                    'times_sold' => $orderProduct->times_sold,
+                                    'is_returned' => $orderProduct->is_returned,
+                                    'sold_by_user_id' => $orderProduct->sold_by_user_id,
+                                    'created_at' => $orderProduct->created_at,
+                                    'updated_at' => $orderProduct->updated_at,
+                                    'product' => [
+                                        'id' => $orderProduct->product->id,
+                                        'product_name' => $orderProduct->product->product_name,
+                                        'category_id' => $orderProduct->product->category_id,
+                                        'country' => $orderProduct->product->country,
+                                        'thickness' => $orderProduct->product->thickness,
+                                        'length' => $orderProduct->product->length,
+                                        'metal_type' => $orderProduct->product->metal_type,
+                                        'price_per_ton' => $orderProduct->product->price_per_ton,
+                                        'length_per_ton' => $orderProduct->product->length_per_ton,
+                                        'price_per_meter' => $orderProduct->product->price_per_meter,
+                                        'price_per_item' => $orderProduct->product->price_per_item,
+                                        'price_per_package' => $orderProduct->product->price_per_package,
+                                        'total_packages' => $orderProduct->product->total_packages,
+                                        'package_weight' => $orderProduct->product->package_weight,
+                                        'package_length' => $orderProduct->product->package_length,
+                                        'weight_per_item' => $orderProduct->product->weight_per_item,
+                                        'weight_per_meter' => $orderProduct->product->weight_per_meter,
+                                        'total_units' => $orderProduct->product->total_units,
+                                        'bron_package' => $orderProduct->product->bron_package,
+                                        'bron_one_pc' => $orderProduct->product->bron_one_pc,
+                                        'grains_package' => $orderProduct->product->grains_package,
+                                        'total_packages' => $orderProduct->product->total_packages,
+                                        'items_in_package' => $orderProduct->product->items_in_package,
+                                        'total_weight' => $orderProduct->product->total_weight,
+                                        'created_at' => $orderProduct->product->created_at,
+                                        'updated_at' => $orderProduct->product->updated_at,
+                                    ],
+                                ];
+                            }),
+                        ];
+                    }),
+                ], 200);
             }
-        } else {
-            $query->where('id', '!=', 1);
         }
 
-        // Additional filters
-        if ($request->has('user_name')) {
-            $query->whereHas('user', function ($q) use ($request) {
-                $q->where('name', 'like', '%' . $request->user_name . '%');
-            });
-        }
-
-        if ($request->has('client_name')) {
-            $query->whereHas('client', function ($q) use ($request) {
-                $q->where('name', 'like', '%' . $request->client_name . '%');
-            });
-        }
-
-        if ($request->has('order_id')) {
-            $query->where('id', $request->order_id);
-        }
-
-        if ($request->has('car_number')) {
-            $query->whereHas('client', function ($q) use ($request) {
-                $q->where('car_number', 'like', '%' . $request->car_number . '%');
-            });
-        }
-
-        if ($request->has('order_date')) {
-            $query->whereDate('created_at', $request->order_date);
-        }
-
-        // Retrieve the orders
+        // If no specific status filter, retrieve all orders except for id = 1
+        $query->where('id', '!=', 1);
         $orders = $query->get();
-
-        // Transform each order to include the user, client, orderProducts, and single status ID
-        $orders = $orders->map(function ($order) {
-            return [
-                'id' => $order->id,
-                'user_id' => $order->user_id,
-                'client_id' => $order->client_id,
-                'total_price' => $order->total_price,
-                'total_weight' => $order->total_weight,
-                'car_number' => $order->client->car_number ?? null,
-                'photos' => $order->photos,
-                'status' => optional($order->statuses->first())->id, // Get the first status ID only
-                'created_at' => $order->created_at,
-                'updated_at' => $order->updated_at,
-                'user' => $order->user, // Include user details
-                'client' => $order->client, // Include client details
-                'order_products' => $order->orderProducts->map(function ($orderProduct) {
-                    return [
-                        'id' => $orderProduct->id,
-                        'order_id' => $orderProduct->order_id,
-                        'product_id' => $orderProduct->product_id,
-                        'quantity_pack' => $orderProduct->quantity_pack,
-                        'quantity_piece' => $orderProduct->quantity_piece,
-                        'price_per_ton' => $orderProduct->price_per_ton,
-                        'price_per_unit' => $orderProduct->price_per_unit,
-                        'total_price' => $orderProduct->total_price,
-                        'total_weight' => $orderProduct->total_weight,
-                        'times_sold' => $orderProduct->times_sold,
-                        'is_returned' => $orderProduct->is_returned,
-                        'sold_by_user_id' => $orderProduct->sold_by_user_id,
-                        'created_at' => $orderProduct->created_at,
-                        'updated_at' => $orderProduct->updated_at,
-                        'product' => [
-                            'id' => $orderProduct->product->id,
-                            'product_name' => $orderProduct->product->product_name,
-                            'category_id' => $orderProduct->product->category_id,
-                            'country' => $orderProduct->product->country,
-                            'thickness' => $orderProduct->product->thickness,
-                            'length' => $orderProduct->product->length,
-                            'metal_type' => $orderProduct->product->metal_type,
-                            'price_per_ton' => $orderProduct->product->price_per_ton,
-                            'length_per_ton' => $orderProduct->product->length_per_ton,
-                            'price_per_meter' => $orderProduct->product->price_per_meter,
-                            'price_per_item' => $orderProduct->product->price_per_item,
-                            'price_per_package' => $orderProduct->product->price_per_package,
-                            'total_packages' => $orderProduct->product->total_packages,
-                            'package_weight' => $orderProduct->product->package_weight,
-                            'package_length' => $orderProduct->product->package_length,
-                            'weight_per_item' => $orderProduct->product->weight_per_item,
-                            'weight_per_meter' => $orderProduct->product->weight_per_meter,
-                            'total_units' => $orderProduct->product->total_units,
-                            'bron_package' => $orderProduct->product->bron_package,
-                            'bron_one_pc' => $orderProduct->product->bron_one_pc,
-                            'grains_package' => $orderProduct->product->grains_package,
-                            'total_packages' => $orderProduct->product->total_packages,
-                            'items_in_package' => $orderProduct->product->items_in_package,
-                            'total_weight' => $orderProduct->product->total_weight,
-                            'created_at' => $orderProduct->product->created_at,
-                            'updated_at' => $orderProduct->product->updated_at,
-                        ],
-                    ];
-                }),
-            ];
-        });
 
         return response()->json($orders, 200);
     }
-
 
 
 

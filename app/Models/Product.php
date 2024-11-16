@@ -30,6 +30,29 @@ class Product extends Model
         'weight_per_item',
         'total_units'
     ];
+
+    protected $casts = [
+        'price_per_ton' => 'decimal:2', // This will ensure it always has two decimal places.
+    ];
+    public function photos()
+    {
+        return $this->hasMany(ProductPhoto::class);
+    }
+
+
+
+//    public function getPricePerTonAttribute($value)
+//    {
+//        // Always return with two decimals
+//        return number_format($value, 2, '.', '');
+//    }
+    // Custom accessor to ensure correct format
+//    public function getPricePerTonAttribute($value)
+//    {
+//        return round((float) $value, 2);
+//    }
+
+
     public function mainProduct()
     {
         return $this->belongsTo(Product::class, 'main_product_id');

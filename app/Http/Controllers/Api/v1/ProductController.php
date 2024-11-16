@@ -203,4 +203,51 @@ class ProductController extends Controller
 
         return response()->json(['message' => 'Price updated', 'product' => $product]);
     }
+    public function addPhotos(Request $request, $id)
+    {
+        $product = Product::findOrFail($id);
+
+        // Validate that up to 15 images are uploaded
+        $request->validate([
+            'photos' => 'required|array|max:15', // Maximum 15 images
+            'photos.*' => 'image|mimes:jpeg,png,jpg,webp|max:2048', // Validate each image (max size: 2MB)
+        ]);
+
+        $uploadedPhotos = [];
+
+        if ($request->hasFile('photos')) {
+            foreach ($request->file('photos') as $photo) {
+                $path = $photo->store('product-photos', 'public'); // Save each photo to 'storage/app/public/product-photos'
+
+                // Save photo path to the database
+                $productPhoto = $product->photos()->create([
+                    'photo_path' => $path,
+                ]);
+
+                $uploadedPhotos[] = $productPhoto; // Add the photo model to the response array
+            }
+        }
+
+        return response()->json([
+            'message' => 'Photos uploaded successfully',
+            'uploaded_photos' => $uploadedPhotos,
+            'product' => $product->load('photos'), // Load the product with its photos
+        ]);
+    }
+    public function deletePhoto($photoId)
+    {
+        $photo = ProductPhoto::findOrFail($photoId);
+
+        // Delete the file from storage
+        Storage::disk('public')->delete($photo->photo_path);
+
+        // Delete the record from the database
+        $photo->delete();
+
+        return response()->json([
+            'message' => 'Photo deleted successfully',
+        ]);
+    }
+
+
 }

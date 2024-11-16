@@ -8,31 +8,42 @@ use Illuminate\Http\Request;
 use App\Models\Category;
 use App\Models\OrderProduct;
 use App\Models\Turnover;
+use Illuminate\Support\Facades\DB;
+
 
 class ProductController extends Controller
 {
+
+
     public function index(Request $request)
     {
         $search = $request->input('search');
-        $category_id = $request->input('category_id'); // Get the selected category
+        $category_id = $request->input('category_id');
 
         // Fetch categories to display in the dropdown
         $categories = Category::all();
 
-        // Query products and apply filters
-        $products = Product::query()
+        // Query products and apply filters directly
+        $productsQuery = DB::table('products')
+            ->select('*') // Select all fields
             ->when($search, function ($query, $search) {
                 return $query->where('product_name', 'like', "%{$search}%")
                     ->orWhere('phone', 'like', "%{$search}%");
             })
             ->when($category_id, function ($query, $category_id) {
-                // Filter products by the selected category
                 return $query->where('category_id', $category_id);
             })
-            ->latest()
-            ->paginate(10)
-            ->appends(['search' => $search, 'category_id' => $category_id]); // Retain search and filters in pagination
+            ->orderByDesc('created_at');
 
+        // Fetch the products
+        $products = $productsQuery->paginate(10)->appends(['search' => $search, 'category_id' => $category_id]);
+
+        // Format price_per_ton to always show 2 decimal places, without converting it into a string
+        $products->getCollection()->transform(function ($product) {
+            $product->price_per_ton = round($product->price_per_ton, 2); // Round to 2 decimals but keep numeric type
+            return $product;
+        });
+//return $products;
         return view('admin.product.index', compact('products', 'categories', 'search', 'category_id'));
     }
     public function create()
@@ -496,6 +507,44 @@ class ProductController extends Controller
     }
 
 
+//    public function addPackage(Request $request, $id)
+//    {
+//        // Validate incoming request for adding packages and units
+//        $validated = $request->validate([
+//            'total_packages' => 'nullable|integer|min:0', // Allow setting packages
+//            'total_units' => 'nullable|integer|min:0', // Allow setting individual units
+//        ]);
+//
+//        // Find the product by ID
+//        $product = Product::findOrFail($id);
+//
+//        // Set the new values for total packages and units
+//        $product->total_packages = $validated['total_packages'] ?? $product->total_packages;
+//        $product->total_units = $validated['total_units'] ?? $product->total_units;
+//
+//        // Calculate the new total weight:
+//        $newTotalWeight = ($product->total_packages * $product->package_weight)
+//            + ($product->total_units * $product->weight_per_item);
+//
+//        // Update total_weight for the product
+//        $product->total_weight = $newTotalWeight;
+//
+//        // Save the updated product information
+//        $product->save();
+//
+//        // Log turnover for 'kirim' (incoming stock) type
+//        Turnover::create([
+//            'product_id' => $product->id,
+//            'user_id' => auth()->id(),
+//            'type' => 'kirim', // Type 'kirim' for added stock
+//            'quantity_pack' => $product->total_packages, // Total quantity of packages
+//            'quantity_piece' => $product->total_units, // Total quantity of individual units
+//            'total_weight' => $newTotalWeight, // New total weight
+//        ]);
+//
+//        // Redirect back to the product index page with a success message
+//        return redirect()->route('product.index')->with('message', 'Mahsulot qoldiqlar qo\'shildi');
+//    }
 
 
     public function edit($id)
