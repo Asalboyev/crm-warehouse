@@ -22,6 +22,7 @@ class ProductController extends Controller
 
         // Query products and apply filters
         $products = Product::query()
+            ->with('photos')
             ->when($search, function ($query, $search) {
                 return $query->where('product_name', 'like', "%{$search}%");
             })
