@@ -57,7 +57,7 @@ Route::prefix('v1')->group(function () {
     Route::middleware(['auth:sanctum', 'role:admin,seller,warehouseman,guard'])->group(function () {
             Route::get('orders', [OrderController::class, 'index']);
             Route::put('orders/{id}/update', [OrderController::class, 'update_status']);
-            Route::post('/products/{id}/photos', [ProductController::class, 'addPhotos']);
+            Route::post('products/{id}/photos', [ProductController::class, 'addPhotos']);
             Route::delete('/photos/{photoId}', [ProductController::class, 'deletePhoto']);
             Route::put('/orders/{order}', [OrderController::class, 'update']);
             Route::get('profile', [CustomersController::class, 'me']);
