@@ -18,6 +18,40 @@ use App\Models\Turnover;
 class OrderController extends Controller
 {
 
+    public function status(Request $request)
+    {
+        $query = Status::query();
+
+        // Foydalanuvchi roli asosida statuslarni filtrlash
+        if (auth()->check()) {
+            $user = auth()->user(); // Autentifikatsiyalangan foydalanuvchini olish
+
+            if ($user->role === 'guard') {
+                // Guard foydalanuvchilari faqat 2, 3, va 4 id li statuslarni ko'radi
+                $query->whereIn('id', [2, 3, 4]);
+            } else {
+                // Boshqa foydalanuvchilar uchun `id = 1` dan tashqari hamma statuslar
+                $query->where('id', '!=', 1);
+            }
+        } else {
+            // Autentifikatsiyalanmagan foydalanuvchilar uchun `id = 1` dan tashqari hamma statuslar
+            $query->where('id', '!=', 1);
+        }
+
+        // Search funksiyasi
+        if ($request->has('search') && !empty($request->search)) {
+            $query->where('name', 'like', '%' . $request->search . '%');
+        }
+
+        // Ma'lumotlarni olish
+        $statuses = $query->get();
+
+        // Javob qaytarish
+        return response()->json([
+            'success' => true,
+            'data' => $statuses,
+        ]);
+    }
 
 //    public function index(Request $request)
 //    {
@@ -141,101 +175,92 @@ class OrderController extends Controller
 
     public function index(Request $request)
     {
-        // Base query for retrieving orders
-        $query = Order::with(['user', 'client', 'orderProducts.product']); // Eager-load relationships except statuses
+        // Base query
+        $query = Order::with(['user', 'client', 'orderProducts.product', 'statuses']); // Munosabatlarni yuklash
 
-        // Check for status filter
+        // Status filtrini tekshirish
         if ($request->has('status')) {
             $statusName = strtolower($request->get('status'));
 
-            // Retrieve status by name or ID
+            // Statusni nomi yoki ID bo'yicha topish
             $status = Status::where('name', $statusName)->orWhere('id', $statusName)->first();
 
             if ($status) {
-                // Filter orders by status
+                // Ushbu status bilan bog'liq buyurtmalarni filtrlang
                 $query->whereHas('statuses', function ($q) use ($status) {
                     $q->where('status_id', $status->id);
                 });
-
-                // Get the count of orders for this status
-                $orderCount = $query->count();
-
-                // Return the count along with order details
-                return response()->json([
-                    'status_id' => $status->id,
-                    'order_count' => $orderCount,
-                    'orders' => $query->get()->map(function ($order) {
-                        return [
-                            'id' => $order->id,
-                            'user_id' => $order->user_id,
-                            'client_id' => $order->client_id,
-                            'total_price' => $order->total_price,
-                            'total_weight' => $order->total_weight,
-                            'car_number' => $order->client->car_number ?? null,
-                            'photos' => $order->photos,
-                            'status' => optional($order->statuses->first())->id,
-                            'created_at' => $order->created_at,
-                            'updated_at' => $order->updated_at,
-                            'user' => $order->user,
-                            'client' => $order->client,
-                            'order_products' => $order->orderProducts->map(function ($orderProduct) {
-                                return [
-                                    'id' => $orderProduct->id,
-                                    'order_id' => $orderProduct->order_id,
-                                    'product_id' => $orderProduct->product_id,
-                                    'quantity_pack' => $orderProduct->quantity_pack,
-                                    'quantity_piece' => $orderProduct->quantity_piece,
-                                    'price_per_ton' => $orderProduct->price_per_ton,
-                                    'price_per_unit' => $orderProduct->price_per_unit,
-                                    'total_price' => $orderProduct->total_price,
-                                    'total_weight' => $orderProduct->total_weight,
-                                    'times_sold' => $orderProduct->times_sold,
-                                    'is_returned' => $orderProduct->is_returned,
-                                    'sold_by_user_id' => $orderProduct->sold_by_user_id,
-                                    'created_at' => $orderProduct->created_at,
-                                    'updated_at' => $orderProduct->updated_at,
-                                    'product' => [
-                                        'id' => $orderProduct->product->id,
-                                        'product_name' => $orderProduct->product->product_name,
-                                        'category_id' => $orderProduct->product->category_id,
-                                        'country' => $orderProduct->product->country,
-                                        'thickness' => $orderProduct->product->thickness,
-                                        'length' => $orderProduct->product->length,
-                                        'metal_type' => $orderProduct->product->metal_type,
-                                        'price_per_ton' => $orderProduct->product->price_per_ton,
-                                        'length_per_ton' => $orderProduct->product->length_per_ton,
-                                        'price_per_meter' => $orderProduct->product->price_per_meter,
-                                        'price_per_item' => $orderProduct->product->price_per_item,
-                                        'price_per_package' => $orderProduct->product->price_per_package,
-                                        'total_packages' => $orderProduct->product->total_packages,
-                                        'package_weight' => $orderProduct->product->package_weight,
-                                        'package_length' => $orderProduct->product->package_length,
-                                        'weight_per_item' => $orderProduct->product->weight_per_item,
-                                        'weight_per_meter' => $orderProduct->product->weight_per_meter,
-                                        'total_units' => $orderProduct->product->total_units,
-                                        'bron_package' => $orderProduct->product->bron_package,
-                                        'bron_one_pc' => $orderProduct->product->bron_one_pc,
-                                        'grains_package' => $orderProduct->product->grains_package,
-                                        'total_packages' => $orderProduct->product->total_packages,
-                                        'items_in_package' => $orderProduct->product->items_in_package,
-                                        'total_weight' => $orderProduct->product->total_weight,
-                                        'created_at' => $orderProduct->product->created_at,
-                                        'updated_at' => $orderProduct->product->updated_at,
-                                    ],
-                                ];
-                            }),
-                        ];
-                    }),
-                ], 200);
             }
         }
 
-        // If no specific status filter, retrieve all orders except for id = 1
-        $query->where('id', '!=', 1);
+        // Authenticated user checks
+        if (auth()->check()) {
+            $user = auth()->user();
+
+            if ($user->role === 'guard') {
+                // Guard foydalanuvchilar faqat 2, 3, 4 idli statuslarni ko'radi
+                $query->whereHas('statuses', function ($q) {
+                    $q->whereIn('status_id', [2, 3, 4]);
+                });
+            } else {
+                // Boshqa foydalanuvchilar faqat id = 1 dan tashqari statuslarni ko'radi
+                $query->whereHas('statuses', function ($q) {
+                    $q->where('status_id', '!=', 1);
+                });
+            }
+        } else {
+            // Foydalanuvchi tizimga kirmagan bo'lsa, id = 1 dan tashqari hamma statuslarni ko'radi
+            $query->whereHas('statuses', function ($q) {
+                $q->where('status_id', '!=', 1);
+            });
+        }
+
+        // Buyurtmalarni olish
         $orders = $query->get();
 
-        return response()->json($orders, 200);
+        // Buyurtmalarni formatlash
+        $result = $orders->map(function ($order) {
+            return [
+                'id' => $order->id,
+                'user_id' => $order->user_id,
+                'client_id' => $order->client_id,
+                'total_price' => $order->total_price,
+                'total_weight' => $order->total_weight,
+                'car_number' => $order->client->car_number ?? null,
+                'photos' => $order->photos,
+                'statuses' => $order->statuses->map(function ($status) {
+                    return [
+                        'id' => $status->id,
+                        'name' => $status->name,
+                    ];
+                }),
+                'created_at' => $order->created_at,
+                'updated_at' => $order->updated_at,
+                'user' => $order->user,
+                'client' => $order->client,
+                'order_products' => $order->orderProducts->map(function ($orderProduct) {
+                    return [
+                        'id' => $orderProduct->id,
+                        'order_id' => $orderProduct->order_id,
+                        'product_id' => $orderProduct->product_id,
+                        'quantity_pack' => $orderProduct->quantity_pack,
+                        'quantity_piece' => $orderProduct->quantity_piece,
+                        'price_per_ton' => $orderProduct->price_per_ton,
+                        'price_per_unit' => $orderProduct->price_per_unit,
+                        'total_price' => $orderProduct->total_price,
+                        'total_weight' => $orderProduct->total_weight,
+                        'product' => [
+                            'id' => $orderProduct->product->id,
+                            'product_name' => $orderProduct->product->product_name,
+                        ],
+                    ];
+                }),
+            ];
+        });
+
+        return response()->json($result, 200);
     }
+
 
 
 

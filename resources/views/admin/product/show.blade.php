@@ -762,12 +762,12 @@
                                                             <div>
                                                                 <label for="pochkalar">Pochkalar qo'shish</label>
                                                                 <input name="total_packages" type="text" id="pochkalar"
-                                                                       value="{{$product->total_packages}}">
+                                                                       value="0">
                                                             </div>
 
                                                             <div>
                                                                 <label for="aloqida-dona">Alohida dona qo'shish</label>
-                                                                <input type="text" name="total_units" id="aloqida-dona" value="{{$product->total_units}}">
+                                                                <input type="text" name="total_units" id="aloqida-dona" value="0">
                                                             </div>
 
                                                         </div>
