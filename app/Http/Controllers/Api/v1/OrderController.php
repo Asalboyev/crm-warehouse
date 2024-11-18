@@ -200,7 +200,7 @@ class OrderController extends Controller
             if ($user->role === 'guard') {
                 // Guard foydalanuvchilar faqat 2, 3, 4 idli statuslarni ko'radi
                 $query->whereHas('statuses', function ($q) {
-                    $q->whereIn('status_id', [2, 3, 4]);
+                    $q->whereIn('status_id', [3, 4]);
                 });
             } else {
                 // Boshqa foydalanuvchilar faqat id = 1 dan tashqari statuslarni ko'radi
