@@ -32,8 +32,29 @@ class Product extends Model
     ];
 
     protected $casts = [
-        'price_per_ton' => 'decimal:2', // This will ensure it always has two decimal places.
+        'thickness' => 'double',
+        'length' => 'double',
+        'price_per_ton' => 'double',
+        'length_per_ton' => 'double',
+        'price_per_meter' => 'double',
+        'price_per_item' => 'double',
+        'price_per_package' => 'double',
+        'items_per_package' => 'double',
+        'package_weight' => 'double',
+        'package_length' => 'double',
+        'weight_per_item' => 'double',
+        'weight_per_meter' => 'double',
+        'bron_package' => 'double',
+        'bron_one_pc' => 'double',
+        'grains_package' => 'double',
+        'total_packages' => 'integer',
+        'total_units' => 'integer',
+        'items_in_package' => 'double',
+        'total_weight' => 'double',
     ];
+//    protected $casts = [
+//        'price_per_ton' => 'decimal:2', // This will ensure it always has two decimal places.
+//    ];
     public function photos()
     {
         return $this->hasMany(ProductPhoto::class);
