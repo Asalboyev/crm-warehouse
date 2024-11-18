@@ -57,6 +57,8 @@ Route::prefix('v1')->group(function () {
             Route::get('products/{id}', [ProductController::class, 'show'])->name('products.show');
             Route::put('products/{id}/add-package', [ProductController::class, 'addPackage'])->name('products.add-package');
             Route::put('products/{id}/update-price', [ProductController::class, 'updatePrice'])->name('products.update-price');
+            Route::get('products/{id}/sklad', [ProductController::class, 'getSklad']);
+            Route::get('/sales/product/{id}', [\App\Http\Controllers\Backend\MainController::class, 'getSalesDetailsForProduct']);
 
         });
         Route::get('/statuses', [OrderController::class, 'status']);
@@ -72,9 +74,9 @@ Route::prefix('v1')->group(function () {
 
 
         Route::middleware(['role:admin,seller'])->group(function () {
-                Route::get('products/{id}/sklad', [ProductController::class, 'getSklad']);
-                Route::get('products', [ProductController::class, 'index'])->name('products.index');
-                Route::get('products/{id}', [ProductController::class, 'show'])->name('products.show');
+//                Route::get('products/{id}/sklad', [ProductController::class, 'getSklad']);
+//                Route::get('products', [ProductController::class, 'index'])->name('products.index');
+//                Route::get('products/{id}', [ProductController::class, 'show'])->name('products.show');
                 Route::get('/sales/product/{id}', [\App\Http\Controllers\Backend\MainController::class, 'getSalesDetailsForProduct']);
 //                Route::get('/statuses', [OrderController::class, 'status']);
                 Route::get('categories', [\App\Http\Controllers\Api\v1\CategoriesController::class, 'index']);
