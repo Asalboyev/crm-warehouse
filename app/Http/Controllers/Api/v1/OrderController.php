@@ -176,21 +176,26 @@ class OrderController extends Controller
     public function index(Request $request)
     {
         // Base query
-        $query = Order::with(['user', 'client', 'orderProducts.product', 'statuses']); // Munosabatlarni yuklash
+        $query = Order::with(['user', 'client', 'orderProducts.product', 'statuses']);
 
-        // Status filtrini tekshirish
+        // Check if a search filter for status is applied
         if ($request->has('status')) {
             $statusName = strtolower($request->get('status'));
 
-            // Statusni nomi yoki ID bo'yicha topish
+            // Find status by name or ID
             $status = Status::where('name', $statusName)->orWhere('id', $statusName)->first();
 
             if ($status) {
-                // Ushbu status bilan bog'liq buyurtmalarni filtrlang
+                // Filter orders related to the searched status
                 $query->whereHas('statuses', function ($q) use ($status) {
                     $q->where('status_id', $status->id);
                 });
             }
+        } else {
+            // If no search filter is applied, exclude orders with status_id = 1
+            $query->whereHas('statuses', function ($q) {
+                $q->where('status_id', '!=', 1);
+            });
         }
 
         // Authenticated user checks
@@ -198,27 +203,27 @@ class OrderController extends Controller
             $user = auth()->user();
 
             if ($user->role === 'guard') {
-                // Guard foydalanuvchilar faqat 2, 3, 4 idli statuslarni ko'radi
+                // Guard users only see statuses with IDs 2, 3, 4
                 $query->whereHas('statuses', function ($q) {
-                    $q->whereIn('status_id', [3, 4]);
+                    $q->whereIn('status_id', [2, 3, 4]);
                 });
             } else {
-                // Boshqa foydalanuvchilar faqat id = 1 dan tashqari statuslarni ko'radi
+                // Other users see statuses except for ID 1 (unless searched)
                 $query->whereHas('statuses', function ($q) {
                     $q->where('status_id', '!=', 1);
                 });
             }
         } else {
-            // Foydalanuvchi tizimga kirmagan bo'lsa, id = 1 dan tashqari hamma statuslarni ko'radi
+            // If the user is not logged in, they can see all statuses except ID 1
             $query->whereHas('statuses', function ($q) {
                 $q->where('status_id', '!=', 1);
             });
         }
 
-        // Buyurtmalarni olish
+        // Fetch the orders
         $orders = $query->get();
 
-        // Buyurtmalarni formatlash
+        // Format the orders
         $result = $orders->map(function ($order) {
             return [
                 'id' => $order->id,
@@ -264,36 +269,35 @@ class OrderController extends Controller
 
 
 
+
 //    public function store(Request $request)
 //    {
 //        // Validate the incoming request
 //        $validated = $request->validate([
 //            'client_id' => 'required|exists:customers,id',
 //            'products' => 'required|array',
+//            'status' => 'required|integer',
 //        ]);
 //
-//        // Start a database transaction
 //        DB::beginTransaction();
 //
 //        try {
-//            // Initialize total price and total weight
 //            $calculatedTotalPrice = 0;
 //            $calculatedTotalWeight = 0;
 //
 //            // Create a new order
 //            $order = Order::create([
-//                'user_id' => auth()->user()->id, // Seller ID
+//                'user_id' => auth()->user()->id,
 //                'client_id' => $request->client_id,
-//                'total_price' => 0, // Initially set to 0, will be updated later
-//                'total_weight' => 0, // Initially set to 0, will be updated later
-//                'order_status' => $request->order_status,
+//                'total_price' => 0,
+//                'total_weight' => 0,
+//                'order_status' => $request->status,
 //                'car_number' => $request->car_number,
 //            ]);
 //
-//            // Initialize an array to group products by product_id
+//            // Group products to sum quantities of the same product
 //            $groupedProducts = [];
 //
-//            // Loop through each product and sum quantities by product_id
 //            foreach ($request->products as $product) {
 //                $productId = $product['product_id'];
 //
@@ -304,401 +308,121 @@ class OrderController extends Controller
 //                    ];
 //                }
 //
-//                // Sum the quantities for the same product in the current request
 //                $groupedProducts[$productId]['quantity_pack'] += $product['quantity_pack'];
 //                $groupedProducts[$productId]['quantity_piece'] += $product['quantity_piece'];
 //            }
 //
-//            // Process each grouped product
 //            foreach ($groupedProducts as $productId => $quantities) {
 //                $productModel = Product::find($productId);
 //                if (!$productModel) {
 //                    return response()->json(['message' => 'Product not found'], 404);
 //                }
 //
-//                $quantityPochka = $quantities['quantity_pack'];
-//                $quantityDona = $quantities['quantity_piece'];
+//                $quantityPack = $quantities['quantity_pack'];
+//                $quantityPiece = $quantities['quantity_piece'];
 //
-//                // Handle stock deduction based on order type
-//                if ($request->zayafka == 0) { // Actual order
-//                    if ($quantityPochka > 0 && $productModel->total_packages < $quantityPochka) {
+//                // Calculate weight and price for the current order item
+//                $weightForPack = $quantityPack * $productModel->package_weight;
+//                $weightForPiece = $quantityPiece * $productModel->weight_per_item;
+//                $totalWeight = $weightForPack + $weightForPiece;
+//
+//                $priceForPack = $quantityPack * $productModel->price_per_package;
+//                $priceForPiece = $quantityPiece * $productModel->price_per_item;
+//                $totalPrice = $priceForPack + $priceForPiece;
+//
+//                if ($request->status == 2) { // Regular order (status 2)
+//                    // Check if requested quantity exceeds available stock
+//                    if ($productModel->total_packages < $quantityPack) {
 //                        return response()->json(['message' => 'Insufficient stock for product ID ' . $productId . ' in packages'], 400);
 //                    }
 //
-//                    if ($quantityDona > 0 && $productModel->total_units < $quantityDona) {
+//                    if ($productModel->total_units < $quantityPiece) {
 //                        return response()->json(['message' => 'Insufficient stock for product ID ' . $productId . ' in units'], 400);
 //                    }
 //
-//                    // Deduct stock for actual orders
-//                    $productModel->total_packages -= $quantityPochka;
-//                    $productModel->total_units -= $quantityDona;
-//                } else {
-//                    // Zayafka: Deduct stock even if it goes negative
-//                    $productModel->total_packages -= $quantityPochka;
-//                    $productModel->total_units -= $quantityDona;
+//                    // Decrease stock for regular orders
+//                    $productModel->total_packages -= $quantityPack;
+//                    $productModel->total_units -= $quantityPiece;
 //                }
 //
-//                // Save the updated product stock
+//                if ($request->status == 1) { // Reservation (bron)
+//                    $remainingPackages = $productModel->total_packages - $quantityPack;
+//                    $remainingUnits = $productModel->total_units - $quantityPiece;
+//
+//                    // If not enough packages are available, update bron values
+//                    if ($remainingPackages < 0) {
+//                        $productModel->bron_package += abs($remainingPackages);
+//                        $productModel->total_packages = -abs($remainingPackages); // Set negative value
+//                    } else {
+//                        $productModel->total_packages = $remainingPackages;
+//                    }
+//
+//                    // If not enough units are available, update bron values
+//                    if ($remainingUnits < 0) {
+//                        $productModel->bron_one_pc += abs($remainingUnits);
+//                        $productModel->total_units = -abs($remainingUnits); // Set negative value
+//                    } else {
+//                        $productModel->total_units = $remainingUnits;
+//                    }
+//
+//                    // Add the entire reserved quantity to bron fields
+//                    $productModel->bron_package += $quantityPack;
+//                    $productModel->bron_one_pc += $quantityPiece;
+//                }
+//
 //                $productModel->save();
 //
-//                // Calculate total weight and price for the current request
-//                $weightForPack = $quantityPochka * $productModel->package_weight;
-//                $weightForPiece = $quantityDona * $productModel->weight_per_item;
-//                $totalWeight = $weightForPack + $weightForPiece;
-//
-//                $priceForPack = $quantityPochka * $productModel->price_per_package;
-//                $priceForPiece = $quantityDona * $productModel->price_per_item;
-//                $totalPrice = $priceForPack + $priceForPiece;
-//
-//                // Accumulate to total price and weight for the order
 //                $calculatedTotalWeight += $totalWeight;
 //                $calculatedTotalPrice += $totalPrice;
 //
-//                // Store the order product details
+//                // Store order product details
 //                OrderProduct::create([
 //                    'order_id' => $order->id,
 //                    'product_id' => $productId,
-//                    'quantity_pack' => $quantityPochka,
-//                    'quantity_piece' => $quantityDona,
+//                    'quantity_pack' => $quantityPack,
+//                    'quantity_piece' => $quantityPiece,
 //                    'price_per_ton' => $productModel->price_per_ton,
 //                    'price_per_unit' => $productModel->price_per_item,
 //                    'total_weight' => $totalWeight,
 //                    'total_price' => $totalPrice,
-//                    'sold_by_user_id' => auth()->user()->id, // The seller ID
+//                    'sold_by_user_id' => auth()->user()->id,
 //                ]);
 //
 //                // Record turnover for the sold product
 //                Turnover::create([
 //                    'product_id' => $productId,
-//                    'type' => 'chiqim', // Assuming 'chiqim' indicates an outgoing sale
-//                    'quantity_pack' => $quantityPochka,
-//                    'quantity_piece' => $quantityDona,
+//                    'type' => 'chiqim',
+//                    'quantity_pack' => $quantityPack,
+//                    'quantity_piece' => $quantityPiece,
 //                    'total_weight' => $totalWeight,
-//                    'user_id' => auth()->user()->id, // The user who made the sale
-//                    'total_price' => $totalPrice, // Record the total price for turnover
+//                    'user_id' => auth()->user()->id,
+//                    'total_price' => $totalPrice,
 //                ]);
 //            }
 //
-//            // Save statuses
-//            $order->statuses()->sync($request->status); // Assuming status IDs are sent as an array
+//            // Update order status and total values
+//            $order->statuses()->sync([$request->status]);
 //
-//            // Update order total_price and total_weight with calculated values
 //            $order->total_price = $calculatedTotalPrice;
 //            $order->total_weight = $calculatedTotalWeight;
 //            $order->save();
 //
-//            // Commit the transaction
 //            DB::commit();
 //
-//            // Return the created order with relationships and total price (Turnover)
+//            // Send Notification about the new order creation
+//            Notification::send(auth()->user(), new OrderCreatedNotification($order));
+//
+//            // Load order with related data for response
 //            $orderWithDetails = $order->load('user', 'client', 'orderProducts.product', 'statuses');
 //            $orderWithDetails->turnover = $calculatedTotalPrice;
 //
 //            return response()->json($orderWithDetails, 201);
 //        } catch (\Exception $e) {
-//            // Rollback the transaction if something failed
 //            DB::rollBack();
 //            \Log::error('Order creation failed: ' . $e->getMessage());
 //            return response()->json(['message' => 'Order creation failed: ' . $e->getMessage()], 500);
 //        }
 //    }
-
-//    public function store(Request $request)
-//    {
-//        // Validate the incoming request
-//        $validated = $request->validate([
-//            'client_id' => 'required|exists:customers,id',
-//            'products' => 'required|array',
-//        ]);
-//
-//        // Start a database transaction
-//        DB::beginTransaction();
-//
-//        try {
-//            // Initialize total price and total weight
-//            $calculatedTotalPrice = 0;
-//            $calculatedTotalWeight = 0;
-//
-//            // Create a new order
-//            $order = Order::create([
-//                'user_id' => auth()->user()->id, // Seller ID
-//                'client_id' => $request->client_id,
-//                'total_price' => 0, // Initially set to 0, will be updated later
-//                'total_weight' => 0, // Initially set to 0, will be updated later
-//                'order_status' => $request->order_status,
-//                'car_number' => $request->car_number,
-//            ]);
-//
-//            // Initialize an array to group products by product_id
-//            $groupedProducts = [];
-//
-//            // Loop through each product and sum quantities by product_id
-//            foreach ($request->products as $product) {
-//                $productId = $product['product_id'];
-//
-//                if (!isset($groupedProducts[$productId])) {
-//                    $groupedProducts[$productId] = [
-//                        'quantity_pack' => 0,
-//                        'quantity_piece' => 0
-//                    ];
-//                }
-//
-//                // Sum the quantities for the same product in the current request
-//                $groupedProducts[$productId]['quantity_pack'] += $product['quantity_pack'];
-//                $groupedProducts[$productId]['quantity_piece'] += $product['quantity_piece'];
-//            }
-//
-//            // Process each grouped product
-//            foreach ($groupedProducts as $productId => $quantities) {
-//                $productModel = Product::find($productId);
-//                if (!$productModel) {
-//                    return response()->json(['message' => 'Product not found'], 404);
-//                }
-//
-//                $quantityPochka = $quantities['quantity_pack'];
-//                $quantityDona = $quantities['quantity_piece'];
-//
-//                // Handle stock deduction based on order type
-//                if ($request->zayafka == 0) { // Actual order
-//                    if ($quantityPochka > 0 && $productModel->total_packages < $quantityPochka) {
-//                        return response()->json(['message' => 'Insufficient stock for product ID ' . $productId . ' in packages'], 400);
-//                    }
-//
-//                    if ($quantityDona > 0 && $productModel->total_units < $quantityDona) {
-//                        return response()->json(['message' => 'Insufficient stock for product ID ' . $productId . ' in units'], 400);
-//                    }
-//
-//                    // Deduct stock for actual orders
-//                    $productModel->total_packages -= $quantityPochka;
-//                    $productModel->total_units -= $quantityDona;
-//                } else {
-//                    // Zayafka: Deduct stock even if it goes negative
-//                    $productModel->total_packages -= $quantityPochka;
-//                    $productModel->total_units -= $quantityDona;
-//                }
-//
-//                // Save the updated product stock
-//                $productModel->save();
-//
-//                // Calculate total weight and price for the current request
-//                $weightForPack = $quantityPochka * $productModel->package_weight;
-//                $weightForPiece = $quantityDona * $productModel->weight_per_item;
-//                $totalWeight = $weightForPack + $weightForPiece;
-//
-//                $priceForPack = $quantityPochka * $productModel->price_per_package;
-//                $priceForPiece = $quantityDona * $productModel->price_per_item;
-//                $totalPrice = $priceForPack + $priceForPiece;
-//
-//                // Accumulate to total price and weight for the order
-//                $calculatedTotalWeight += $totalWeight;
-//                $calculatedTotalPrice += $totalPrice;
-//
-//                // Store the order product details
-//                OrderProduct::create([
-//                    'order_id' => $order->id,
-//                    'product_id' => $productId,
-//                    'quantity_pack' => $quantityPochka,
-//                    'quantity_piece' => $quantityDona,
-//                    'price_per_ton' => $productModel->price_per_ton,
-//                    'price_per_unit' => $productModel->price_per_item,
-//                    'total_weight' => $totalWeight,
-//                    'total_price' => $totalPrice,
-//                    'sold_by_user_id' => auth()->user()->id, // The seller ID
-//                ]);
-//
-//                // Record turnover for the sold product
-//                Turnover::create([
-//                    'product_id' => $productId,
-//                    'type' => 'chiqim', // Assuming 'chiqim' indicates an outgoing sale
-//                    'quantity_pack' => $quantityPochka,
-//                    'quantity_piece' => $quantityDona,
-//                    'total_weight' => $totalWeight,
-//                    'user_id' => auth()->user()->id, // The user who made the sale
-//                    'total_price' => $totalPrice, // Record the total price for turnover
-//                ]);
-//            }
-//
-//            // Save statuses
-//            $order->statuses()->sync($request->status); // Assuming status IDs are sent as an array
-//
-//            // Update order total_price and total_weight with calculated values
-//            $order->total_price = $calculatedTotalPrice;
-//            $order->total_weight = $calculatedTotalWeight;
-//            $order->save();
-//
-//            // Commit the transaction
-//            DB::commit();
-//
-//            // Return the created order with relationships and total price (Turnover)
-//            $orderWithDetails = $order->load('user', 'client', 'orderProducts.product', 'statuses');
-//            $orderWithDetails->turnover = $calculatedTotalPrice;
-//
-//            return response()->json($orderWithDetails, 201);
-//        } catch (\Exception $e) {
-//            // Rollback the transaction if something failed
-//            DB::rollBack();
-//            \Log::error('Order creation failed: ' . $e->getMessage());
-//            return response()->json(['message' => 'Order creation failed: ' . $e->getMessage()], 500);
-//        }
-//    }
-
-//    public function store(Request $request)
-//    {
-//        // Validate the incoming request
-//        $validated = $request->validate([
-//            'client_id' => 'required|exists:customers,id',
-//            'products' => 'required|array',
-//        ]);
-//
-//        // Start a database transaction
-//        DB::beginTransaction();
-//
-//        try {
-//            // Initialize total price and total weight
-//            $calculatedTotalPrice = 0;
-//            $calculatedTotalWeight = 0;
-//
-//            // Create a new order
-//            $order = Order::create([
-//                'user_id' => auth()->user()->id, // Seller ID
-//                'client_id' => $request->client_id,
-//                'total_price' => 0, // Initially set to 0, will be updated later
-//                'total_weight' => 0, // Initially set to 0, will be updated later
-//                'order_status' => $request->order_status,
-//                'car_number' => $request->car_number,
-//            ]);
-//
-//            // Initialize an array to group products by product_id
-//            $groupedProducts = [];
-//
-//            // Loop through each product and sum quantities by product_id
-//            foreach ($request->products as $product) {
-//                $productId = $product['product_id'];
-//
-//                if (!isset($groupedProducts[$productId])) {
-//                    $groupedProducts[$productId] = [
-//                        'quantity_pack' => 0,
-//                        'quantity_piece' => 0
-//                    ];
-//                }
-//
-//                // Sum the quantities for the same product in the current request
-//                $groupedProducts[$productId]['quantity_pack'] += $product['quantity_pack'];
-//                $groupedProducts[$productId]['quantity_piece'] += $product['quantity_piece'];
-//            }
-//
-//            // Process each grouped product
-//            foreach ($groupedProducts as $productId => $quantities) {
-//                $productModel = Product::find($productId);
-//                if (!$productModel) {
-//                    return response()->json(['message' => 'Product not found'], 404);
-//                }
-//
-//                $quantityPochka = $quantities['quantity_pack'];
-//                $quantityDona = $quantities['quantity_piece'];
-//
-//                // Calculate the initial total weight before sale
-//                $initialWeightForPack = $productModel->total_packages * $productModel->package_weight;
-//                $initialWeightForPiece = $productModel->total_units * $productModel->weight_per_item;
-//                $initialTotalWeight = $initialWeightForPack + $initialWeightForPiece;
-//
-//                // Deduct stock based on the order
-//                if ($request->zayafka == 0) { // Actual order
-//                    if ($quantityPochka > 0 && $productModel->total_packages < $quantityPochka) {
-//                        return response()->json(['message' => 'Insufficient stock for product ID ' . $productId . ' in packages'], 400);
-//                    }
-//
-//                    if ($quantityDona > 0 && $productModel->total_units < $quantityDona) {
-//                        return response()->json(['message' => 'Insufficient stock for product ID ' . $productId . ' in units'], 400);
-//                    }
-//
-//                    // Deduct stock for actual orders
-//                    $productModel->total_packages -= $quantityPochka;
-//                    $productModel->total_units -= $quantityDona;
-//                } else {
-//                    // Zayafka: Deduct stock even if it goes negative
-//                    $productModel->total_packages -= $quantityPochka;
-//                    $productModel->total_units -= $quantityDona;
-//                }
-//
-//                // Save the updated product stock
-//                $productModel->save();
-//
-//                // Calculate total weight and price for the current request
-//                $weightForPack = $quantityPochka * $productModel->package_weight;
-//                $weightForPiece = $quantityDona * $productModel->weight_per_item;
-//                $totalWeight = $weightForPack + $weightForPiece;
-//
-//                $priceForPack = $quantityPochka * $productModel->price_per_package;
-//                $priceForPiece = $quantityDona * $productModel->price_per_item;
-//                $totalPrice = $priceForPack + $priceForPiece;
-//
-//                // Accumulate to total price and weight for the order
-//                $calculatedTotalWeight += $totalWeight;
-//                $calculatedTotalPrice += $totalPrice;
-//
-//                // Store the order product details
-//                OrderProduct::create([
-//                    'order_id' => $order->id,
-//                    'product_id' => $productId,
-//                    'quantity_pack' => $quantityPochka,
-//                    'quantity_piece' => $quantityDona,
-//                    'price_per_ton' => $productModel->price_per_ton,
-//                    'price_per_unit' => $productModel->price_per_item,
-//                    'total_weight' => $totalWeight,
-//                    'total_price' => $totalPrice,
-//                    'sold_by_user_id' => auth()->user()->id, // The seller ID
-//                ]);
-//
-//                // Record turnover for the sold product
-//                Turnover::create([
-//                    'product_id' => $productId,
-//                    'type' => 'chiqim', // Assuming 'chiqim' indicates an outgoing sale
-//                    'quantity_pack' => $quantityPochka,
-//                    'quantity_piece' => $quantityDona,
-//                    'total_weight' => $totalWeight,
-//                    'user_id' => auth()->user()->id, // The user who made the sale
-//                    'total_price' => $totalPrice, // Record the total price for turnover
-//                ]);
-//
-//                // Calculate the remaining weight (remaining stock)
-//                $remainingWeightForPack = $productModel->total_packages * $productModel->package_weight;
-//                $remainingWeightForPiece = $productModel->total_units * $productModel->weight_per_item;
-//                $remainingTotalWeight = $remainingWeightForPack + $remainingWeightForPiece;
-//
-//                // Add remaining stock weight to the total weight
-//                $calculatedTotalWeight += $remainingTotalWeight;
-//
-//                // Update product's total weight after the sale
-//                $productModel->total_weight = $remainingTotalWeight;
-//                $productModel->save();
-//            }
-//
-//            // Save statuses
-//            $order->statuses()->sync($request->status); // Assuming status IDs are sent as an array
-//
-//            // Update order total_price and total_weight with calculated values
-//            $order->total_price = $calculatedTotalPrice;
-//            $order->total_weight = $calculatedTotalWeight; // Update the total weight
-//            $order->save();
-//
-//            // Commit the transaction
-//            DB::commit();
-//
-//            // Return the created order with relationships and total price (Turnover)
-//            $orderWithDetails = $order->load('user', 'client', 'orderProducts.product', 'statuses');
-//            $orderWithDetails->turnover = $calculatedTotalPrice;
-//
-//            return response()->json($orderWithDetails, 201);
-//        } catch (\Exception $e) {
-//            // Rollback the transaction if something failed
-//            DB::rollBack();
-//            \Log::error('Order creation failed: ' . $e->getMessage());
-//            return response()->json(['message' => 'Order creation failed: ' . $e->getMessage()], 500);
-//        }
-//    }
-
-
 
     public function store(Request $request)
     {
@@ -839,6 +563,18 @@ class OrderController extends Controller
 
             DB::commit();
 
+            // Send Notification to all users about the new order creation
+            $users = User::all(); // Get all users or you can filter specific users
+            foreach ($users as $user) {
+                Notification::create([
+                    'order_id' => $order->id,
+                    'user_id' => $user->id,
+                    'previous_status_name' => 'Yangi  Zakaz qabul qilindi',
+                    'new_status_name' => 'Yangi  Zakaz qabul qilindi',
+                    'is_read' => false,
+                ]);
+            }
+
             // Load order with related data for response
             $orderWithDetails = $order->load('user', 'client', 'orderProducts.product', 'statuses');
             $orderWithDetails->turnover = $calculatedTotalPrice;
@@ -858,35 +594,147 @@ class OrderController extends Controller
     {
         return response()->json($order->load('user', 'client', 'orderProducts.product'), 200);
     }
+//    public function update(Request $request, $orderId)
+//    {
+//        // Validate the incoming request
+//        $validated = $request->validate([
+//            'client_id' => 'required|exists:customers,id',
+//            'products' => 'required|array',
+//            // Other validation rules as needed
+//        ]);
+//
+//        // Start a database transaction
+//        DB::beginTransaction();
+//
+//        try {
+//            // Fetch the existing order
+//            $order = Order::findOrFail($orderId);
+//
+//            // Update the order details
+//            $order->update([
+//                'client_id' => $request->client_id,
+//                'total_price' => $request->total_price,
+//                'total_weight' => $request->total_weight,
+//                'order_status' => $request->order_status,
+//                'car_number' => $request->car_number,
+//            ]);
+//
+//            // Initialize an array to group products by product_id
+//            $groupedProducts = [];
+//
+//            // Loop through each product and sum quantities by product_id
+//            foreach ($request->products as $product) {
+//                $productId = $product['product_id'];
+//
+//                if (!isset($groupedProducts[$productId])) {
+//                    $groupedProducts[$productId] = [
+//                        'quantity_pack' => 0,
+//                        'quantity_piece' => 0
+//                    ];
+//                }
+//
+//                // Sum the quantities for the same product in the current request
+//                $groupedProducts[$productId]['quantity_pack'] += $product['quantity_pack'];
+//                $groupedProducts[$productId]['quantity_piece'] += $product['quantity_piece'];
+//            }
+//
+//            // Process each grouped product and update stock
+//            foreach ($groupedProducts as $productId => $quantities) {
+//                $productModel = Product::find($productId);
+//                if (!$productModel) {
+//                    return response()->json(['message' => 'Product not found'], 404);
+//                }
+//
+//                $quantityPochka = $quantities['quantity_pack'];
+//                $quantityDona = $quantities['quantity_piece'];
+//
+//                // Handle stock deduction based on order type
+//                if ($request->zayafka == 0) { // Actual order
+//                    if ($quantityPochka > 0 && $productModel->total_packages < $quantityPochka) {
+//                        return response()->json(['message' => 'Mahsulot identifikatori uchun zaxira yetarli emas ' . $productId . ' pochkalar'], 400);
+//                    }
+//
+//                    if ($quantityDona > 0 && $productModel->total_units < $quantityDona) {
+//                        return response()->json(['message' => 'Mahsulot identifikatori uchun zaxira yetarli emas' . $productId . ' dona'], 400);
+//                    }
+//
+//                    // Deduct stock for actual orders
+//                    $productModel->total_packages -= $quantityPochka;
+//                    $productModel->total_units -= $quantityDona;
+//                } else {
+//                    // Zayafka: Deduct stock even if it goes negative
+//                    $productModel->total_packages -= $quantityPochka;
+//                    $productModel->total_units -= $quantityDona;
+//                }
+//
+//                // Save the updated product stock
+//                $productModel->save();
+//
+//                // Calculate total weight and price for the current request
+//                $totalWeight = ($quantityPochka * $productModel->package_weight) + ($quantityDona * $productModel->weight_per_item);
+//                $totalPrice = ($quantityPochka * $productModel->price_per_package) + ($quantityDona * $productModel->price_per_item);
+//
+//                // Update the existing order product or create a new one
+//                $orderProduct = OrderProduct::updateOrCreate(
+//                    [
+//                        'order_id' => $order->id,
+//                        'product_id' => $productId,
+//                    ],
+//                    [
+//                        'quantity_pack' => $quantityPochka,
+//                        'quantity_piece' => $quantityDona,
+//                        'price_per_ton' => $productModel->price_per_ton,
+//                        'price_per_unit' => $productModel->price_per_item,
+//                        'total_weight' => $totalWeight,
+//                        'total_price' => $totalPrice,
+//                        'sold_by_user_id' => auth()->user()->id, // The seller ID
+//                    ]
+//                );
+//            }
+//
+//            // Save statuses
+//            $order->statuses()->sync($request->status); // Assuming status IDs are sent as an array
+//
+//            // Commit the transaction
+//            DB::commit();
+//
+//            // Return the updated order with relationships
+//            return response()->json($order->load('user', 'client', 'orderProducts.product', 'statuses'), 200);
+//        } catch (\Exception $e) {
+//            // Rollback the transaction if something failed
+//            DB::rollBack();
+//            \Log::error('Order update failed: ' . $e->getMessage());
+//            return response()->json(['message' => 'Order update failed: ' . $e->getMessage()], 500);
+//        }
+//    }
+
     public function update(Request $request, $orderId)
     {
         // Validate the incoming request
         $validated = $request->validate([
             'client_id' => 'required|exists:customers,id',
             'products' => 'required|array',
-            // Other validation rules as needed
+            'status' => 'required|integer',
         ]);
 
-        // Start a database transaction
         DB::beginTransaction();
 
         try {
-            // Fetch the existing order
+            // Fetch the order by ID
             $order = Order::findOrFail($orderId);
 
-            // Update the order details
-            $order->update([
-                'client_id' => $request->client_id,
-                'total_price' => $request->total_price,
-                'total_weight' => $request->total_weight,
-                'order_status' => $request->order_status,
-                'car_number' => $request->car_number,
-            ]);
+            // Ensure the order belongs to the current authenticated user
+            if ($order->user_id !== auth()->user()->id) {
+                return response()->json(['message' => 'Unauthorized'], 403);
+            }
 
-            // Initialize an array to group products by product_id
+            // Calculate the total price and weight for the updated order
+            $calculatedTotalPrice = 0;
+            $calculatedTotalWeight = 0;
+
+            // Group products to sum quantities of the same product
             $groupedProducts = [];
 
-            // Loop through each product and sum quantities by product_id
             foreach ($request->products as $product) {
                 $productId = $product['product_id'];
 
@@ -897,75 +745,137 @@ class OrderController extends Controller
                     ];
                 }
 
-                // Sum the quantities for the same product in the current request
                 $groupedProducts[$productId]['quantity_pack'] += $product['quantity_pack'];
                 $groupedProducts[$productId]['quantity_piece'] += $product['quantity_piece'];
             }
 
-            // Process each grouped product and update stock
             foreach ($groupedProducts as $productId => $quantities) {
                 $productModel = Product::find($productId);
                 if (!$productModel) {
                     return response()->json(['message' => 'Product not found'], 404);
                 }
 
-                $quantityPochka = $quantities['quantity_pack'];
-                $quantityDona = $quantities['quantity_piece'];
+                $quantityPack = $quantities['quantity_pack'];
+                $quantityPiece = $quantities['quantity_piece'];
 
-                // Handle stock deduction based on order type
-                if ($request->zayafka == 0) { // Actual order
-                    if ($quantityPochka > 0 && $productModel->total_packages < $quantityPochka) {
-                        return response()->json(['message' => 'Mahsulot identifikatori uchun zaxira yetarli emas ' . $productId . ' pochkalar'], 400);
+                // Calculate weight and price for the updated order item
+                $weightForPack = $quantityPack * $productModel->package_weight;
+                $weightForPiece = $quantityPiece * $productModel->weight_per_item;
+                $totalWeight = $weightForPack + $weightForPiece;
+
+                $priceForPack = $quantityPack * $productModel->price_per_package;
+                $priceForPiece = $quantityPiece * $productModel->price_per_item;
+                $totalPrice = $priceForPack + $priceForPiece;
+
+                if ($request->status == 2) { // Regular order (status 2)
+                    // Check if requested quantity exceeds available stock
+                    if ($productModel->total_packages < $quantityPack) {
+                        return response()->json(['message' => 'Insufficient stock for product ID ' . $productId . ' in packages'], 400);
                     }
 
-                    if ($quantityDona > 0 && $productModel->total_units < $quantityDona) {
-                        return response()->json(['message' => 'Mahsulot identifikatori uchun zaxira yetarli emas' . $productId . ' dona'], 400);
+                    if ($productModel->total_units < $quantityPiece) {
+                        return response()->json(['message' => 'Insufficient stock for product ID ' . $productId . ' in units'], 400);
                     }
 
-                    // Deduct stock for actual orders
-                    $productModel->total_packages -= $quantityPochka;
-                    $productModel->total_units -= $quantityDona;
-                } else {
-                    // Zayafka: Deduct stock even if it goes negative
-                    $productModel->total_packages -= $quantityPochka;
-                    $productModel->total_units -= $quantityDona;
+                    // Decrease stock for regular orders
+                    $productModel->total_packages -= $quantityPack;
+                    $productModel->total_units -= $quantityPiece;
                 }
 
-                // Save the updated product stock
+                if ($request->status == 1) { // Reservation (bron)
+                    $remainingPackages = $productModel->total_packages - $quantityPack;
+                    $remainingUnits = $productModel->total_units - $quantityPiece;
+
+                    // If not enough packages are available, update bron values
+                    if ($remainingPackages < 0) {
+                        $productModel->bron_package += abs($remainingPackages);
+                        $productModel->total_packages = -abs($remainingPackages); // Set negative value
+                    } else {
+                        $productModel->total_packages = $remainingPackages;
+                    }
+
+                    // If not enough units are available, update bron values
+                    if ($remainingUnits < 0) {
+                        $productModel->bron_one_pc += abs($remainingUnits);
+                        $productModel->total_units = -abs($remainingUnits); // Set negative value
+                    } else {
+                        $productModel->total_units = $remainingUnits;
+                    }
+
+                    // Add the entire reserved quantity to bron fields
+                    $productModel->bron_package += $quantityPack;
+                    $productModel->bron_one_pc += $quantityPiece;
+                }
+
                 $productModel->save();
 
-                // Calculate total weight and price for the current request
-                $totalWeight = ($quantityPochka * $productModel->package_weight) + ($quantityDona * $productModel->weight_per_item);
-                $totalPrice = ($quantityPochka * $productModel->price_per_package) + ($quantityDona * $productModel->price_per_item);
+                $calculatedTotalWeight += $totalWeight;
+                $calculatedTotalPrice += $totalPrice;
 
-                // Update the existing order product or create a new one
-                $orderProduct = OrderProduct::updateOrCreate(
-                    [
+                // Update the existing order product details
+                $orderProduct = OrderProduct::where('order_id', $order->id)
+                    ->where('product_id', $productId)
+                    ->first();
+
+                if ($orderProduct) {
+                    $orderProduct->quantity_pack = $quantityPack;
+                    $orderProduct->quantity_piece = $quantityPiece;
+                    $orderProduct->total_weight = $totalWeight;
+                    $orderProduct->total_price = $totalPrice;
+                    $orderProduct->save();
+                } else {
+                    // If no existing order product, create a new one
+                    OrderProduct::create([
                         'order_id' => $order->id,
                         'product_id' => $productId,
-                    ],
-                    [
-                        'quantity_pack' => $quantityPochka,
-                        'quantity_piece' => $quantityDona,
+                        'quantity_pack' => $quantityPack,
+                        'quantity_piece' => $quantityPiece,
                         'price_per_ton' => $productModel->price_per_ton,
                         'price_per_unit' => $productModel->price_per_item,
                         'total_weight' => $totalWeight,
                         'total_price' => $totalPrice,
-                        'sold_by_user_id' => auth()->user()->id, // The seller ID
-                    ]
-                );
+                        'sold_by_user_id' => auth()->user()->id,
+                    ]);
+                }
+
+                // Update the turnover for the sold product
+                Turnover::create([
+                    'product_id' => $productId,
+                    'type' => 'chiqim',
+                    'quantity_pack' => $quantityPack,
+                    'quantity_piece' => $quantityPiece,
+                    'total_weight' => $totalWeight,
+                    'user_id' => auth()->user()->id,
+                    'total_price' => $totalPrice,
+                ]);
             }
 
-            // Save statuses
-            $order->statuses()->sync($request->status); // Assuming status IDs are sent as an array
+            // Update order status and total values
+            $order->order_status = $request->status;
+            $order->total_price = $calculatedTotalPrice;
+            $order->total_weight = $calculatedTotalWeight;
+            $order->save();
 
-            // Commit the transaction
             DB::commit();
 
-            // Return the updated order with relationships
-            return response()->json($order->load('user', 'client', 'orderProducts.product', 'statuses'), 200);
+            // Send Notification to all users about the order update
+            $users = User::all(); // Get all users or you can filter specific users
+            foreach ($users as $user) {
+                Notification::create([
+                    'order_id' => $order->id,
+                    'user_id' => $user->id,
+                    'previous_status_name' => $order->statuses()->first()->name ?? 'Unknown',
+                    'new_status_name' => $request->status,
+                    'is_read' => false,
+                ]);
+            }
+
+            // Load order with related data for response
+            $orderWithDetails = $order->load('user', 'client', 'orderProducts.product', 'statuses');
+            $orderWithDetails->turnover = $calculatedTotalPrice;
+
+            return response()->json($orderWithDetails, 200);
         } catch (\Exception $e) {
-            // Rollback the transaction if something failed
             DB::rollBack();
             \Log::error('Order update failed: ' . $e->getMessage());
             return response()->json(['message' => 'Order update failed: ' . $e->getMessage()], 500);
@@ -1014,7 +924,7 @@ class OrderController extends Controller
                 Notification::create([
                     'order_id' => $order->id,
                     'user_id' => $user->id,
-                    'previous_status_name' => $previousStatusName,
+                    'previous_status_name' => "Status o'zgardi ".$previousStatusName,
                     'new_status_name' => $newStatusName,
                     'is_read' => false,
                 ]);
