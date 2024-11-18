@@ -178,43 +178,34 @@ class OrderController extends Controller
         // Base query
         $query = Order::with(['user', 'client', 'orderProducts.product', 'statuses']);
 
-        // Check if a search filter for status is applied
+        // Check if a status filter is applied
         if ($request->has('status')) {
-            $statusName = strtolower($request->get('status'));
+            $statusValue = $request->get('status');
 
-            // Find status by name or ID
-            $status = Status::where('name', $statusName)->orWhere('id', $statusName)->first();
-
-            if ($status) {
-                // Filter orders related to the searched status
-                $query->whereHas('statuses', function ($q) use ($status) {
-                    $q->where('status_id', $status->id);
-                });
-            }
-        } else {
-            // If no search filter is applied, exclude orders with status_id = 1
-            $query->whereHas('statuses', function ($q) {
-                $q->where('status_id', '!=', 1);
-            });
-        }
-
-        // Authenticated user checks
-        if (auth()->check()) {
-            $user = auth()->user();
-
-            if ($user->role === 'guard') {
-                // Guard users only see statuses with IDs 2, 3, 4
+            // If status is specifically set to "1", include only orders with status_id = 1
+            if ($statusValue === '1') {
                 $query->whereHas('statuses', function ($q) {
-                    $q->whereIn('status_id', [2, 3, 4]);
+                    $q->where('status_id', 1);
                 });
-            } else {
-                // Other users see statuses except for ID 1 (unless searched)
+            } elseif ($statusValue === '' || $statusValue === '0') {
+                // If status is empty (e.g., ?status=) or "0", exclude orders with status_id = 1
                 $query->whereHas('statuses', function ($q) {
                     $q->where('status_id', '!=', 1);
                 });
+            } else {
+                // For other status values, check if the status exists and filter by it
+                $status = Status::where('name', strtolower($statusValue))
+                    ->orWhere('id', $statusValue)
+                    ->first();
+
+                if ($status) {
+                    $query->whereHas('statuses', function ($q) use ($status) {
+                        $q->where('status_id', $status->id);
+                    });
+                }
             }
         } else {
-            // If the user is not logged in, they can see all statuses except ID 1
+            // If no status parameter is present, exclude orders with status_id = 1
             $query->whereHas('statuses', function ($q) {
                 $q->where('status_id', '!=', 1);
             });
