@@ -15,35 +15,60 @@ class ProductController extends Controller
 {
 
 
+//    public function index(Request $request)
+//    {
+//        $search = $request->input('search');
+//        $category_id = $request->input('category_id');
+//
+//        // Fetch categories to display in the dropdown
+//        $categories = Category::all();
+//
+//        // Query products and apply filters directly
+//        $productsQuery = DB::table('products')
+//            ->select('*') // Select all fields
+//            ->when($search, function ($query, $search) {
+//                return $query->where('product_name', 'like', "%{$search}%")
+//                    ->orWhere('phone', 'like', "%{$search}%");
+//            })
+//            ->when($category_id, function ($query, $category_id) {
+//                return $query->where('category_id', $category_id);
+//            })
+//            ->orderByDesc('created_at');
+//
+//        // Fetch the products
+//        $products = $productsQuery->paginate(10)->appends(['search' => $search, 'category_id' => $category_id]);
+//
+//        // Format price_per_ton to always show 2 decimal places, without converting it into a string
+//        $products->getCollection()->transform(function ($product) {
+//            $product->price_per_ton = round($product->price_per_ton, 2); // Round to 2 decimals but keep numeric type
+//            return $product;
+//        });
+////return $products;
+//        return view('admin.product.index', compact('products', 'categories', 'search', 'category_id'));
+//    }
+
     public function index(Request $request)
     {
         $search = $request->input('search');
-        $category_id = $request->input('category_id');
+        $category_id = $request->input('category_id'); // Get the selected category
 
         // Fetch categories to display in the dropdown
         $categories = Category::all();
 
-        // Query products and apply filters directly
-        $productsQuery = DB::table('products')
-            ->select('*') // Select all fields
+        // Query products and apply filters
+        $products = Product::query()
             ->when($search, function ($query, $search) {
                 return $query->where('product_name', 'like', "%{$search}%")
                     ->orWhere('phone', 'like', "%{$search}%");
             })
             ->when($category_id, function ($query, $category_id) {
+                // Filter products by the selected category
                 return $query->where('category_id', $category_id);
             })
-            ->orderByDesc('created_at');
+            ->latest()
+            ->paginate(10)
+            ->appends(['search' => $search, 'category_id' => $category_id]); // Retain search and filters in pagination
 
-        // Fetch the products
-        $products = $productsQuery->paginate(10)->appends(['search' => $search, 'category_id' => $category_id]);
-
-        // Format price_per_ton to always show 2 decimal places, without converting it into a string
-        $products->getCollection()->transform(function ($product) {
-            $product->price_per_ton = round($product->price_per_ton, 2); // Round to 2 decimals but keep numeric type
-            return $product;
-        });
-//return $products;
         return view('admin.product.index', compact('products', 'categories', 'search', 'category_id'));
     }
     public function create()
