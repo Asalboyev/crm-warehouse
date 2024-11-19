@@ -224,12 +224,7 @@ class OrderController extends Controller
                 'total_weight' => $order->total_weight,
                 'car_number' => $order->client->car_number ?? null,
                 'photos' => $order->photos,
-                'statuses' => $order->statuses->map(function ($status) {
-                    return [
-                        'id' => $status->id,
-                        'name' => $status->name,
-                    ];
-                }),
+                'status' => $order->statuses()->pluck('statuses.id')->first(),
                 'created_at' => $order->created_at,
                 'updated_at' => $order->updated_at,
                 'user' => $order->user,
@@ -583,8 +578,23 @@ class OrderController extends Controller
 // View order details
     public function show(Order $order)
     {
-        return response()->json($order->load('user', 'client', 'orderProducts.product'), 200);
+        // Load the necessary relationships
+        $order->load('user', 'client', 'orderProducts.product');
+
+        // Retrieve the first status ID or return null if no status is linked
+        $status = $order->statuses()->pluck('statuses.id')->first();
+
+        // Append the status as a single value to the order object
+        $order->status = $status;
+
+        // Remove the original `statuses` relationship from the output
+        unset($order->statuses);
+
+        return response()->json($order, 200);
     }
+
+
+
 //    public function update(Request $request, $orderId)
 //    {
 //        // Validate the incoming request
