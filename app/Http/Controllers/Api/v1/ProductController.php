@@ -186,7 +186,6 @@ class ProductController extends Controller
             'total_weight' => $newTotalWeight, // Weight for added stock only
         ]);
 
-
         return response()->json(['message' => 'Packages added', 'product' => $product]);
     }
 

@@ -8,6 +8,7 @@ use App\Http\Controllers\Backend\CategoriesController;
 use App\Http\Controllers\Backend\CustomerController;
 use App\Http\Controllers\Backend\MainController;
 use App\Http\Controllers\Backend\ProductController;
+use App\Http\Controllers\Backend\OrderController;
 
 
 /*
@@ -65,6 +66,18 @@ Route::middleware(['auth','role:admin'])->group(function () {
     Route::get('/product/{id}/edit', [ProductController::class, 'edit'])->name('product.edit');
     Route::put('/product/{id}', [ProductController::class, 'update'])->name('product.update');
     Route::delete('product/{id}/destroy', [ProductController::class, 'destroy'])->name('product.destroy');
+
+    //order start
+
+    Route::get('orders', [OrderController::class, 'index'])->name('order.index');
+    Route::get('product/create', [ProductController::class, 'create'])->name('product.create');
+    Route::get('/product/{id}/show', [ProductController::class, 'show'])->name('product.show');
+    Route::post('/product/store', [ProductController::class, 'store'])->name('product.store');
+    Route::get('/product/{id}/edit', [ProductController::class, 'edit'])->name('product.edit');
+    Route::put('/product/{id}', [ProductController::class, 'update'])->name('product.update');
+    Route::delete('product/{id}/destroy', [ProductController::class, 'destroy'])->name('product.destroy');
+
+    // ending order
 
     Route::put('/product/{id}/update-price', [ProductController::class, 'updatePrice'])->name('product.updatePrice');
     Route::put('product/{id}/add-package', [ProductController::class, 'addPackage'])->name('product.addPackage');
