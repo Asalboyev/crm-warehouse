@@ -709,6 +709,166 @@ class OrderController extends Controller
 //        }
 //    }
 
+//    public function update(Request $request, $orderId)
+//    {
+//        // Validate the incoming request
+//        $validated = $request->validate([
+//            'client_id' => 'required|exists:customers,id',
+//            'products' => 'required|array',
+//            'status' => 'required|integer',
+//        ]);
+//
+//        DB::beginTransaction();
+//
+//        try {
+//            $calculatedTotalPrice = 0;
+//            $calculatedTotalWeight = 0;
+//
+//            // Find the existing order
+//            $order = Order::find($orderId);
+//            if (!$order) {
+//                return response()->json(['message' => 'Order not found'], 404);
+//            }
+//
+//            // Restore the original product quantities before update
+//            foreach ($order->orderProducts as $orderProduct) {
+//                $product = Product::find($orderProduct->product_id);
+//                if ($product) {
+//                    // Restore the quantities based on the original order
+//                    $product->total_packages += $orderProduct->quantity_pack;
+//                    $product->total_units += $orderProduct->quantity_piece;
+//
+//                    if ($order->order_status == 1) { // If it was a reservation
+//                        $product->bron_package -= $orderProduct->quantity_pack;
+//                        $product->bron_one_pc -= $orderProduct->quantity_piece;
+//                    }
+//
+//                    $product->save();
+//                }
+//            }
+//
+//            // Remove existing order products to replace them with new data
+//            $order->orderProducts()->delete();
+//
+//            // Update order details
+//            $order->update([
+//                'client_id' => $request->client_id,
+//                'car_number' => $request->car_number,
+//                'order_status' => $request->status,
+//            ]);
+//
+//            // Group products to sum quantities of the same product
+//            $groupedProducts = [];
+//
+//            foreach ($request->products as $product) {
+//                $productId = $product['product_id'];
+//
+//                if (!isset($groupedProducts[$productId])) {
+//                    $groupedProducts[$productId] = [
+//                        'quantity_pack' => 0,
+//                        'quantity_piece' => 0
+//                    ];
+//                }
+//
+//                $groupedProducts[$productId]['quantity_pack'] += $product['quantity_pack'];
+//                $groupedProducts[$productId]['quantity_piece'] += $product['quantity_piece'];
+//            }
+//
+//            foreach ($groupedProducts as $productId => $quantities) {
+//                $productModel = Product::find($productId);
+//                if (!$productModel) {
+//                    return response()->json(['message' => 'Product not found'], 404);
+//                }
+//
+//                $quantityPack = $quantities['quantity_pack'];
+//                $quantityPiece = $quantities['quantity_piece'];
+//
+//                // Calculate weight and price for the current order item
+//                $weightForPack = $quantityPack * $productModel->package_weight;
+//                $weightForPiece = $quantityPiece * $productModel->weight_per_item;
+//                $totalWeight = $weightForPack + $weightForPiece;
+//
+//                $priceForPack = $quantityPack * $productModel->price_per_package;
+//                $priceForPiece = $quantityPiece * $productModel->price_per_item;
+//                $totalPrice = $priceForPack + $priceForPiece;
+//
+//                if ($request->status == 2) { // Regular order (status 2)
+//                    // Check if requested quantity exceeds available stock
+//                    if ($productModel->total_packages < $quantityPack) {
+//                        return response()->json(['message' => 'Insufficient stock for product ID ' . $productId . ' in packages'], 400);
+//                    }
+//
+//                    if ($productModel->total_units < $quantityPiece) {
+//                        return response()->json(['message' => 'Insufficient stock for product ID ' . $productId . ' in units'], 400);
+//                    }
+//
+//                    // Decrease stock for regular orders
+//                    $productModel->total_packages -= $quantityPack;
+//                    $productModel->total_units -= $quantityPiece;
+//                }
+//
+//                if ($request->status == 1) { // Reservation (bron)
+//                    $remainingPackages = $productModel->total_packages - $quantityPack;
+//                    $remainingUnits = $productModel->total_units - $quantityPiece;
+//
+//                    if ($remainingPackages < 0) {
+//                        $productModel->bron_package += abs($remainingPackages);
+//                        $productModel->total_packages = -abs($remainingPackages); // Set negative value
+//                    } else {
+//                        $productModel->total_packages = $remainingPackages;
+//                    }
+//
+//                    if ($remainingUnits < 0) {
+//                        $productModel->bron_one_pc += abs($remainingUnits);
+//                        $productModel->total_units = -abs($remainingUnits); // Set negative value
+//                    } else {
+//                        $productModel->total_units = $remainingUnits;
+//                    }
+//
+//                    $productModel->bron_package += $quantityPack;
+//                    $productModel->bron_one_pc += $quantityPiece;
+//                }
+//
+//                $productModel->save();
+//
+//                $calculatedTotalWeight += $totalWeight;
+//                $calculatedTotalPrice += $totalPrice;
+//
+//                // Store updated order product details
+//                OrderProduct::create([
+//                    'order_id' => $order->id,
+//                    'product_id' => $productId,
+//                    'quantity_pack' => $quantityPack,
+//                    'quantity_piece' => $quantityPiece,
+//                    'price_per_ton' => $productModel->price_per_ton,
+//                    'price_per_unit' => $productModel->price_per_item,
+//                    'total_weight' => $totalWeight,
+//                    'total_price' => $totalPrice,
+//                    'sold_by_user_id' => auth()->user()->id,
+//                ]);
+//            }
+//
+//            // Update order status and total values
+//            $order->statuses()->sync([$request->status]);
+//
+//            $order->total_price = $calculatedTotalPrice;
+//            $order->total_weight = $calculatedTotalWeight;
+//            $order->save();
+//
+//            DB::commit();
+//
+//            // Load order with related data for response
+//            $orderWithDetails = $order->load('user', 'client', 'orderProducts.product', 'statuses');
+//            $orderWithDetails->turnover = $calculatedTotalPrice;
+//
+//            return response()->json($orderWithDetails, 200);
+//        } catch (\Exception $e) {
+//            DB::rollBack();
+//            \Log::error('Order update failed: ' . $e->getMessage());
+//            return response()->json(['message' => 'Order update failed: ' . $e->getMessage()], 500);
+//        }
+//    }
+
     public function update(Request $request, $orderId)
     {
         // Validate the incoming request
@@ -766,12 +926,14 @@ class OrderController extends Controller
                 if (!isset($groupedProducts[$productId])) {
                     $groupedProducts[$productId] = [
                         'quantity_pack' => 0,
-                        'quantity_piece' => 0
+                        'quantity_piece' => 0,
+                        'is_returned' => 0,
                     ];
                 }
 
                 $groupedProducts[$productId]['quantity_pack'] += $product['quantity_pack'];
                 $groupedProducts[$productId]['quantity_piece'] += $product['quantity_piece'];
+                $groupedProducts[$productId]['is_returned'] = $product['is_returned'] ?? 0;
             }
 
             foreach ($groupedProducts as $productId => $quantities) {
@@ -782,6 +944,7 @@ class OrderController extends Controller
 
                 $quantityPack = $quantities['quantity_pack'];
                 $quantityPiece = $quantities['quantity_piece'];
+                $isReturned = $quantities['is_returned'];
 
                 // Calculate weight and price for the current order item
                 $weightForPack = $quantityPack * $productModel->package_weight;
@@ -845,6 +1008,7 @@ class OrderController extends Controller
                     'total_weight' => $totalWeight,
                     'total_price' => $totalPrice,
                     'sold_by_user_id' => auth()->user()->id,
+                    'is_returned' => $isReturned,
                 ]);
             }
 
