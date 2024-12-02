@@ -34,7 +34,7 @@ class Product extends Model
     protected $casts = [
         'thickness' => 'double',
         'length' => 'double',
-        'price_per_ton' => 'double',
+            'price_per_ton' => 'double',
         'length_per_ton' => 'double',
         'price_per_meter' => 'double',
         'price_per_item' => 'double',

@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 @section('title')
-    Products
+    Buyurtmalar
 @endsection
 @section('style')
 @endsection
@@ -16,7 +16,9 @@
         </div>
     @endif
     @include('admin.success-file')
+
     <div class="post d-flex flex-column-fluid" id="kt_post">
+
         <!--begin::Container-->
         <div id="kt_content_container" class="container-xxl">
 
@@ -31,57 +33,33 @@
                         <div class="card-header pt-7">
                             <!--begin::Title-->
                             <h3 class="card-title align-items-start flex-column">
-                                <span class="card-label fw-bolder text-gray-800">Product Orders</span>
-                                <span class="text-gray-400 mt-1 fw-bold fs-6">Avg. 57 orders per day</span>
+                                <span class="card-label fw-bolder text-gray-800">Buyurtmalar</span>
                             </h3>
                             <!--end::Title-->
                             <!--begin::Actions-->
                             <div class="card-toolbar">
                                 <!--begin::Filters-->
                                 <div class="d-flex flex-stack flex-wrap gap-4">
-                                    <!--begin::Destination-->
-                                    <div class="d-flex align-items-center fw-bolder">
-                                        <!--begin::Label-->
-                                        <div class="text-gray-400 fs-7 me-2">Cateogry</div>
-                                        <!--end::Label-->
-                                        <!--begin::Select-->
-                                        <select
-                                            class="form-select form-select-transparent text-graY-800 fs-base lh-1 fw-bolder py-0 ps-3 w-auto"
-                                            data-control="select2" data-hide-search="true"
-                                            data-dropdown-css-class="w-150px"
-                                            data-placeholder="Select an option">
-                                            <option></option>
-                                            <option value="Show All" selected="selected">Show All</option>
-                                            <option value="a">Category A</option>
-                                            <option value="b">Category A</option>
-                                        </select>
-                                        <!--end::Select-->
-                                    </div>
-                                    <!--end::Destination-->
-                                    <!--begin::Status-->
-                                    <div class="d-flex align-items-center fw-bolder">
-                                        <!--begin::Label-->
+
+                                    <div class="d-flex align-items-center fw-bolder mb-3">
                                         <div class="text-gray-400 fs-7 me-2">Status</div>
-                                        <!--end::Label-->
-                                        <!--begin::Select-->
-                                        <select
-                                            class="form-select form-select-transparent text-dark fs-7 lh-1 fw-bolder py-0 ps-3 w-auto"
-                                            data-control="select2" data-hide-search="true"
-                                            data-dropdown-css-class="w-150px"
-                                            data-placeholder="Select an option" data-kt-table-widget-4="filter_status">
-                                            <option></option>
-                                            <option value="Show All" selected="selected">Show All</option>
-                                            <option value="Shipped">Shipped</option>
-                                            <option value="Confirmed">Confirmed</option>
-                                            <option value="Rejected">Rejected</option>
-                                            <option value="Pending">Pending</option>
+                                        <select id="statusFilter" class="form-select form-select-transparent text-dark fs-7 lh-1 fw-bolder py-0 ps-3 w-auto">
+                                            <option value="all" selected>Barchasi</option>
+                                            <option value="Ariza holatida">Ariza holatida</option>
+                                            <option value="Yangi">Yangi</option>
+                                            <option value="Avto keldi">Avto keldi</option>
+                                            <option value="Avto kirdi">Avto kirdi</option>
+                                            <option value="Yakunlandi">Yakunlandi</option>
+                                            <option value="Qarz">Qarz</option>
+                                            <option value="Bekor qilindi">Bekor qilindi</option>
                                         </select>
-                                        <!--end::Select-->
                                     </div>
                                     <!--end::Status-->
                                     <!--begin::Search-->
                                     <div class="position-relative my-1">
                                         <!--begin::Svg Icon | path: icons/duotune/general/gen021.svg-->
+                                        <form method="GET" action="{{ route('order.index') }}">
+
                                         <span
                                             class="svg-icon svg-icon-2 position-absolute top-50 translate-middle-y ms-4">
 																<svg xmlns="http://www.w3.org/2000/svg" width="24"
@@ -97,9 +75,13 @@
 															</span>
                                         <!--end::Svg Icon-->
                                         <input type="text" data-kt-table-widget-4="search"
+                                               name="search"
+                                               id="search-input" value="{{ request('search') }}"
                                                class="form-control w-150px fs-7 ps-12"
                                                placeholder="Search"/>
                                     </div>
+                                    </form>
+
                                     <!--end::Search-->
                                 </div>
                                 <!--begin::Filters-->
@@ -110,117 +92,58 @@
                         <!--begin::Card body-->
                         <div class="card-body pt-2">
                             <!--begin::Table-->
-                            <table class="table align-middle table-row-dashed fs-6 gy-3" id="kt_table_widget_4_table">
-                                <!--begin::Table head-->
+                            <table class="table align-middle table-row-dashed fs-6 gy-3" id="ordersTable">
                                 <thead>
-                                <!--begin::Table row-->
                                 <tr class="text-start text-gray-400 fw-bolder fs-7 text-uppercase gs-0">
-                                    <th class="min-w-100px">Order ID</th>
-                                    <th class="text-end min-w-100px">Created</th>
-                                    <th class="text-end min-w-125px">Customer</th>
-                                    <th class="text-end min-w-100px">Total</th>
-                                    <th class="text-end min-w-100px">Profit</th>
+                                    <th class="min-w-100px">#</th>
+                                    <th class="min-w-100px">Buyurtma vaqti</th>
+                                    <th class="text-end min-w-100px">Mijoz</th>
+                                    <th class="text-end min-w-125px">Tel raqami</th>
+                                    <th class="text-end min-w-100px">Sotuvchi</th>
+                                    <th class="text-end min-w-100px">Summa</th>
+                                    <th class="text-end min-w-50px">Og’irligi-Tonna</th>
+                                    <th class="text-end min-w-50px">Avto nomer</th>
                                     <th class="text-end min-w-50px">Status</th>
-                                    <th class="text-end"></th>
                                 </tr>
-                                <!--end::Table row-->
                                 </thead>
-                                <!--end::Table head-->
-                                <!--begin::Table body-->
                                 <tbody class="fw-bolder text-gray-600">
-                                <tr data-kt-table-widget-4="subtable_template" class="d-none">
-                                    <td colspan="2">
-                                        <div class="d-flex align-items-center gap-3">
-                                            <a href="#" class="symbol symbol-50px bg-secondary bg-opacity-25 rounded">
-                                                <img src="" data-kt-src-path="assets/media/stock/ecommerce/" alt=""
-                                                     data-kt-table-widget-4="template_image"/>
-                                            </a>
-                                            <div class="d-flex flex-column text-muted">
-                                                <a href="#" class="text-gray-800 text-hover-primary fw-bolder"
-                                                   data-kt-table-widget-4="template_name">Product name</a>
-                                                <div class="fs-7" data-kt-table-widget-4="template_description">Product
-                                                    description
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td class="text-end">
-                                        <div class="text-gray-800 fs-7">Cost</div>
-                                        <div class="text-muted fs-7 fw-bolder" data-kt-table-widget-4="template_cost">
-                                            1
-                                        </div>
-                                    </td>
-                                    <td class="text-end">
-                                        <div class="text-gray-800 fs-7">Qty</div>
-                                        <div class="text-muted fs-7 fw-bolder" data-kt-table-widget-4="template_qty">1
-                                        </div>
-                                    </td>
-                                    <td class="text-end">
-                                        <div class="text-gray-800 fs-7">Total</div>
-                                        <div class="text-muted fs-7 fw-bolder" data-kt-table-widget-4="template_total">
-                                            name
-                                        </div>
-                                    </td>
-                                    <td class="text-end">
-                                        <div class="text-gray-800 fs-7 me-3">On hand</div>
-                                        <div class="text-muted fs-7 fw-bolder" data-kt-table-widget-4="template_stock">
-                                            32
-                                        </div>
-                                    </td>
-                                    <td></td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <a href="../../demo1/dist/apps/ecommerce/catalog/edit-product.html"
-                                           class="text-gray-800 text-hover-primary">#XGY-346</a>
-                                    </td>
-                                    <td class="text-end">7 min ago</td>
-                                    <td class="text-end">
-                                        <a href="#" class="text-gray-600 text-hover-primary">Albert Flores</a>
-                                    </td>
-                                    <td class="text-end">$630.00</td>
-                                    <td class="text-end">
-                                        <span class="text-gray-800 fw-boldest">$86.70</span>
-                                    </td>
-                                    <td class="text-end">
-                                        <span class="badge py-3 px-4 fs-7 badge-light-warning">Pending</span>
-                                    </td>
-                                    <td class="text-end">
-                                        <button type="button"
-                                                class="btn btn-sm btn-icon btn-light btn-active-light-primary toggle h-25px w-25px"
-                                                data-kt-table-widget-4="expand_row">
-                                            <!--begin::Svg Icon | path: icons/duotune/arrows/arr087.svg-->
-                                            <span class="svg-icon svg-icon-3 m-0 toggle-off">
-																		<svg xmlns="http://www.w3.org/2000/svg"
-                                                                             width="24" height="24" viewBox="0 0 24 24"
-                                                                             fill="none">
-																			<rect opacity="0.5" x="11" y="18" width="12"
-                                                                                  height="2" rx="1"
-                                                                                  transform="rotate(-90 11 18)"
-                                                                                  fill="currentColor"/>
-																			<rect x="6" y="11" width="12" height="2"
-                                                                                  rx="1" fill="currentColor"/>
-																		</svg>
-																	</span>
-                                            <!--end::Svg Icon-->
-                                            <!--begin::Svg Icon | path: icons/duotune/arrows/arr089.svg-->
-                                            <span class="svg-icon svg-icon-3 m-0 toggle-on">
-																		<svg xmlns="http://www.w3.org/2000/svg"
-                                                                             width="24" height="24" viewBox="0 0 24 24"
-                                                                             fill="none">
-																			<rect x="6" y="11" width="12" height="2"
-                                                                                  rx="1" fill="currentColor"/>
-																		</svg>
-																	</span>
-                                            <!--end::Svg Icon-->
-                                        </button>
-                                    </td>
-                                </tr>
+                                @foreach($orders as $order)
+                                    <tr data-status="{{ $order->statuses->pluck('name')->join(',') }}">
+                                        <td>#{{ $loop->iteration }}</td>
+                                        <td> <a class="text-end" href="{{route('order.show', $order->id)}}">{{ $order->created_at }}</a></td>
+                                        <td class="text-end">{{ $order->client->name }}</td>
+                                        <td class="text-end">{{ $order->client->phone }}</td>
+                                        <td class="text-end">{{ $order->user->name }}</td>
+                                        <td class="text-end">$ {{ $order->total_price }}</td>
+                                        <td class="text-end">{{ $order->total_weight }}</td>
+                                        <td class="text-end">{{ $order->car_number ?? '--' }}</td>
+                                        <td class="text-end">
+                                            @foreach($order->statuses as $status)
+                                                @php
+                                                    // Ranglar xaritasini aniqlash
+                                                    $statusColors = [
+                                                        'Ariza holatida' => 'badge-light-primary', // Ko'k rang
+                                                        'Yangi' => 'badge-light-info', // Kamalak rang
+                                                        'Avto keldi' => 'badge-light-success', // Suv rang
+                                                        'Avto kirdi' => 'badge-light-warning', // Zangori rang
+                                                        'Yakunlandi' => 'badge-light-green', // Yashil rang
+                                                        'Qarz' => 'badge-light-danger', // Qizil rang
+                                                        'Bekor qilindi' => 'badge-light-dark', // Qora rang
+                                                    ];
 
+                                                    // Statusga mos rangni topish
+                                                    $badgeClass = $statusColors[$status->name] ?? 'badge-light-secondary'; // Agar mos rang topilmasa, kulrang
+                                                @endphp
+                                                <span class="badge py-3 px-4 fs-7 {{ $badgeClass }}">
+                                                {{ $status->name }}
+                                            </span>
+                                            @endforeach
+                                        </td>
+
+                                    </tr>
+                                @endforeach
                                 </tbody>
-                                <!--end::Table body-->
-                            </table>
-                            <!--end::Table-->
+                            </table>                            <!--end::Table-->
                         </div>
                         <!--end::Card body-->
                     </div>
@@ -262,6 +185,21 @@
                 });
             });
         });
+        document.getElementById('statusFilter').addEventListener('change', function () {
+            const selectedStatus = this.value.toLowerCase();
+            const rows = document.querySelectorAll('#ordersTable tbody tr');
+
+            rows.forEach(row => {
+                const rowStatuses = row.getAttribute('data-status').toLowerCase();
+
+                if (selectedStatus === 'all' || rowStatuses.includes(selectedStatus)) {
+                    row.style.display = ''; // Ko'rsatish
+                } else {
+                    row.style.display = 'none'; // Yashirish
+                }
+            });
+        });
+
     </script>
 
 @endsection

@@ -12,29 +12,34 @@ class OrderController extends Controller
     {
         $search = $request->input('search');
 
-        // Fetch categories to display in the dropdown (if you have categories)
-
-        // Query orders and apply filters
-        $orders = Order::with(['client', 'user']) // Include related client and user data
-        ->when($search, function ($query, $search) {
-            // Apply search filter to Order, Client, and User
-            return $query->where('name', 'like', "%{$search}%")
-                ->orWhere('phone', 'like', "%{$search}%")
-                ->orWhereHas('client', function ($query) use ($search) {
-                    $query->where('name', 'like', "%{$search}%")
-                        ->orWhere('email', 'like', "%{$search}%");
-                })
-                ->orWhereHas('user', function ($query) use ($search) {
-                    $query->where('name', 'like', "%{$search}%")
-                        ->orWhere('email', 'like', "%{$search}%");
+        $orders = Order::with(['client', 'user', 'statuses'])
+            ->when($search, function ($query, $search) {
+                $query->where(function ($subQuery) use ($search) {
+                    $subQuery->orWhereHas('client', function ($query) use ($search) {
+                        $query->where('name', 'like', "%{$search}%")
+                            ->orWhere('phone', 'like', "%{$search}%");
+                    })->orWhereHas('user', function ($query) use ($search) {
+                        $query->where('name', 'like', "%{$search}%");
+                    });
                 });
-        })
+            })
             ->latest()
             ->paginate(10)
-            ->appends(['search' => $search]); // Retain search and filters in pagination
+            ->appends(['search' => $search]);
 
         return view('admin.orders.index', compact('orders', 'search'));
     }
+    public function show($id)
+    {
+        // Buyurtma va unga tegishli barcha ma'lumotlarni olish, shu jumladan OrderProductlar
+        $order = Order::with(['client', 'user', 'statuses', 'orderProducts.product'])->findOrFail($id);
+
+        return
+            view('admin.orders.show', compact('order'));
+    }
+
+
+
 
 
 }

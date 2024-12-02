@@ -82,7 +82,7 @@
                             <div class="card-title">
                                 <!--begin::Search-->
                                 <form class="d-flex align-items-center position-relative my-1" id="search-form"
-                                      action="{{ route('categories.index') }}" method="GET">
+                                      action="{{ route('customers.index') }}" method="GET">
 
                                     <!--begin::Svg Icon | path: icons/duotune/general/gen021.svg-->
                                     <span class="svg-icon svg-icon-1 position-absolute ms-6">

@@ -70,6 +70,7 @@ Route::middleware(['auth','role:admin'])->group(function () {
     //order start
 
     Route::get('orders', [OrderController::class, 'index'])->name('order.index');
+    Route::get('orders/{id}', [OrderController::class, 'show'])->name('order.show');
     Route::get('product/create', [ProductController::class, 'create'])->name('product.create');
     Route::get('/product/{id}/show', [ProductController::class, 'show'])->name('product.show');
     Route::post('/product/store', [ProductController::class, 'store'])->name('product.store');
