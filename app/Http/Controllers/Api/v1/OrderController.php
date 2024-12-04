@@ -14,6 +14,9 @@ use App\Models\OrderImage;
 use App\Models\User;
 use App\Models\Notification;
 use App\Models\Turnover;
+use Illuminate\Support\Facades\Storage;
+
+
 
 
 class OrderController extends Controller
@@ -1122,76 +1125,59 @@ class OrderController extends Controller
             return response()->json(['message' => 'Order update failed: ' . $e->getMessage()], 500);
         }
     }
-    public function uploadPhotos(Request $request, $orderId)
+    public function updatePhotos(Request $request, $id)
     {
-        // Order mavjudligini tekshirish
-        $order = Order::findOrFail($orderId);
+        // 1. Validsiya
+//        $request->validate([
+//            'photos.*' => 'nullable|image|mimes:jpeg,png,jpg|max:2048', // Rasm fayllari uchun
+//        ]);
 
-        // Fayl mavjudligini tekshirish
-        if (!$request->hasFile('photos')) {
-            return response()->json(['message' => 'No photos provided.'], 400);
-        }
+        // 2. Orderni topish
+        $order = Order::findOrFail($id);
 
-        $photos = $request->file('photos');
-
-        // Maksimal rasm sonini cheklash
-        if (count($photos) > 15) {
-            return response()->json(['message' => 'Cannot upload more than 15 images.'], 400);
-        }
-
-        // Fayllarni validatsiya qilish
-        $validated = $request->validate([
-            'photos' => 'required|array',
-            'photos.*' => 'image|mimes:jpeg,png,jpg,gif,webp|max:10240',
-        ], [
-            'photos.required' => 'Photos field is required.',
-            'photos.array' => 'Photos must be sent as an array.',
-            'photos.*.image' => 'Each file must be a valid image.',
-            'photos.*.mimes' => 'Allowed formats are jpeg, png, jpg, gif, webp.',
-            'photos.*.max' => 'Maximum file size for each image is 10 MB.',
-        ]);
-
-        // Yuklangan rasmlar yo‘llarini saqlash uchun massiv
-        $uploadedPhotos = [];
-
-        // Yuklash jarayonini boshqarish uchun tranzaksiya
-        DB::beginTransaction();
-
-        try {
-            foreach ($photos as $photo) {
-                // Fayl nomini yaratish
-                $uniqueFileName = uniqid() . '.webp';
-                $uploadDir = 'uploads/images/';
-                $filePath = $uploadDir . $uniqueFileName;
-
-                // Rasmni WebP formatida qayta ishlash
-                $image = Image::make($photo)->encode('webp', 90);
-                $image->save(public_path($filePath)); // Faylni saqlash
-
-                // Yuklangan rasm yo‘lini massivga qo‘shish
-                $uploadedPhotos[] = $filePath;
+        // 3. Eski rasmlarni tizimdan o‘chirish (agar kerak bo‘lsa)
+        if ($order->photos) {
+            foreach ($order->photos as $existingPhoto) {
+                $filePath = public_path('storage/' . $existingPhoto);
+                if (file_exists($filePath)) {
+                    unlink($filePath);
+                }
             }
-
-            // Tranzaksiyani muvaffaqiyatli tugatish
-            DB::commit();
-
-            // Javobni qaytarish
-            return response()->json([
-                'message' => 'Photos uploaded successfully!',
-                'photos' => $uploadedPhotos,
-            ], 200);
-        } catch (\Exception $e) {
-            // Xato yuz bersa tranzaksiyani bekor qilish
-            DB::rollBack();
-
-            // Xatolik haqida foydalanuvchiga xabar berish
-            return response()->json([
-                'message' => 'Photo upload failed. Please try again.',
-                'error' => $e->getMessage(),
-            ], 500);
         }
+
+        // 4. Yuklangan rasmlarni saqlash
+        $savedPhotos = []; // Yangi rasmlar uchun massiv
+        if ($request->hasFile('photos')) {
+            foreach ($request->file('photos') as $photo) {
+                // Fayl nomini yaratish
+                $fileName = 'order_' . $order->id . '_' . uniqid() . '.jpg';
+
+                // Rasmni hajmini kichraytirish
+                $image = Image::make($photo->getRealPath());
+                $image->resize(300, 300, function ($constraint) {
+                    $constraint->aspectRatio();  // Aspektni saqlash
+                    $constraint->upsize();       // Faylni kattalashtirmaslik
+                });
+
+                // Faylni saqlash
+                $filePath = public_path('storage/orders/' . $fileName);
+                $image->save($filePath, 90, 'jpg'); // Rasmni .jpg formatida saqlash
+
+                // Fayl yo‘lini massivga qo‘shish
+                $savedPhotos[] = 'orders/' . $fileName;
+            }
+        }
+
+        // 5. Orderga yangi rasmlarni saqlash
+        $order->photos = $savedPhotos;
+        $order->save();
+
+        // 6. Javobni qaytarish
+        return response()->json([
+            'message' => 'Rasmlar muvaffaqiyatli yangilandi',
+            'photos' => $order->photos,  // Saqlangan rasmlar ro‘yxati
+        ]);
     }
-    // Delete an order
     public function destroy(Order $order)
     {
         // Start a database transaction

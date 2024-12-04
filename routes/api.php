@@ -58,7 +58,8 @@ Route::prefix('v1')->group(function () {
             Route::get('orders', [OrderController::class, 'index']);
             Route::put('orders/{id}/update', [OrderController::class, 'update_status']);
             Route::post('products/{id}/photos', [ProductController::class, 'addPhotos']);
-            Route::post('/orders/{orderId}/photos', [OrderController::class, 'uploadPhotos']);
+            Route::post('orders/{id}/photos', [OrderController::class, 'updatePhotos']);
+
 
 
         Route::delete('/photos/{photoId}', [ProductController::class, 'deletePhoto']);

@@ -16,7 +16,10 @@ class Order extends Model
         'status',
         'car_number',
         'order_status',
-        'photo'
+        'photos'
+    ];
+    protected $casts = [
+        'photos' => 'array', // JSON bo‘lib massiv sifatida ishlaydi
     ];
 
 
