@@ -177,84 +177,183 @@ class OrderController extends Controller
 //    }
 
 
-    public function index(Request $request)
-    {
-        // Base query
-        $query = Order::with(['user', 'client', 'orderProducts.product', 'statuses']);
+// public function index(Request $request)
+// {
+//     // Base query
+//     $query = Order::with(['user', 'client', 'orderProducts.product', 'statuses']);
 
-        // Check if a status filter is applied
-        if ($request->has('status')) {
-            $statusValue = $request->get('status');
+//     // Check if a status filter is applied
+//     if ($request->has('status')) {
+//         $statusValue = $request->get('status');
 
-            // If status is specifically set to "1", include only orders with status_id = 1
-            if ($statusValue === '1') {
-                $query->whereHas('statuses', function ($q) {
-                    $q->where('status_id', 1);
-                });
-            } elseif ($statusValue === '' || $statusValue === '0') {
-                // If status is empty (e.g., ?status=) or "0", exclude orders with status_id = 1
-                $query->whereHas('statuses', function ($q) {
-                    $q->where('status_id', '!=', 1);
-                });
-            } else {
-                // For other status values, check if the status exists and filter by it
-                $status = Status::where('name', strtolower($statusValue))
-                    ->orWhere('id', $statusValue)
-                    ->first();
+//         // If status is specifically set to "1", include only orders with status_id = 1
+//         if ($statusValue === '1') {
+//             $query->whereHas('statuses', function ($q) {
+//                 $q->where('status_id', 1);
+//             });
+//         } elseif ($statusValue === '' || $statusValue === '0') {
+//             // If status is empty (e.g., ?status=) or "0", exclude orders with status_id = 1
+//             $query->whereHas('statuses', function ($q) {
+//                 $q->where('status_id', '!=', 1);
+//             });
+//         } else {
+//             // For other status values, check if the status exists and filter by it
+//             $status = Status::where('name', strtolower($statusValue))
+//                 ->orWhere('id', $statusValue)
+//                 ->first();
 
-                if ($status) {
-                    $query->whereHas('statuses', function ($q) use ($status) {
-                        $q->where('status_id', $status->id);
-                    });
-                }
-            }
-        } else {
-            // If no status parameter is present, exclude orders with status_id = 1
+//             if ($status) {
+//                 $query->whereHas('statuses', function ($q) use ($status) {
+//                     $q->where('status_id', $status->id);
+//                 });
+//             }
+//         }
+//     } else {
+//         // If no status parameter is present, exclude orders with status_id = 1
+//         $query->whereHas('statuses', function ($q) {
+//             $q->where('status_id', '!=', 1);
+//         });
+//     }
+
+//     // Fetch the orders
+//     $orders = $query->get();
+
+//     // Add count of orders
+//     $count = $orders->count();
+
+//     // Format the orders
+//     $result = $orders->map(function ($order) {
+//         return [
+//             'id' => $order->id,
+//             'user_id' => $order->user_id,
+//             'client_id' => $order->client_id,
+//             'total_price' => $order->total_price,
+//             'total_weight' => $order->total_weight,
+//             'car_number' => $order->car_number ?? null,
+//             'photos' => $order->photos,
+//             'status' => $order->statuses()->pluck('statuses.id')->first(),
+//             'created_at' => $order->created_at,
+//             'updated_at' => $order->updated_at,
+//             'user' => $order->user,
+//             'client' => $order->client,
+//             'order_products' => $order->orderProducts->map(function ($orderProduct) {
+//                 return [
+//                     'id' => $orderProduct->id,
+//                     'order_id' => $orderProduct->order_id,
+//                     'product_id' => $orderProduct->product_id,
+//                     'quantity_pack' => $orderProduct->quantity_pack,
+//                     'quantity_piece' => $orderProduct->quantity_piece,
+//                     'price_per_ton' => $orderProduct->price_per_ton,
+//                     'price_per_unit' => $orderProduct->price_per_unit,
+//                     'total_price' => $orderProduct->total_price,
+//                     'total_weight' => $orderProduct->total_weight,
+//                     'product' => [
+//                         'id' => $orderProduct->product->id,
+//                         'product_name' => $orderProduct->product->product_name,
+//                     ],
+//                 ];
+//             }),
+//         ];
+//     });
+
+//     // Include count in the response
+//     return response()->json([
+//         'count' => $count,
+//         'orders' => $result
+//     ], 200);
+// }
+
+public function index(Request $request)
+{
+    // Base query
+    $query = Order::with(['user', 'client', 'orderProducts.product', 'statuses']);
+
+    // Check if a status filter is applied
+    if ($request->has('status')) {
+        $statusValue = $request->get('status');
+
+        // If status is specifically set to "1", include only orders with status_id = 1
+        if ($statusValue === '1') {
+            $query->whereHas('statuses', function ($q) {
+                $q->where('status_id', 1);
+            });
+        } elseif ($statusValue === '' || $statusValue === '0') {
+            // If status is empty (e.g., ?status=) or "0", exclude orders with status_id = 1
             $query->whereHas('statuses', function ($q) {
                 $q->where('status_id', '!=', 1);
             });
+        } else {
+            // For other status values, check if the status exists and filter by it
+            $status = Status::where('name', strtolower($statusValue))
+                ->orWhere('id', $statusValue)
+                ->first();
+
+            if ($status) {
+                $query->whereHas('statuses', function ($q) use ($status) {
+                    $q->where('status_id', $status->id);
+                });
+            }
         }
-
-        // Fetch the orders
-        $orders = $query->get();
-
-        // Format the orders
-        $result = $orders->map(function ($order) {
-            return [
-                'id' => $order->id,
-                'user_id' => $order->user_id,
-                'client_id' => $order->client_id,
-                'total_price' => $order->total_price,
-                'total_weight' => $order->total_weight,
-                'car_number' => $order->car_number ?? null,
-                'photos' => $order->photos,
-                'status' => $order->statuses()->pluck('statuses.id')->first(),
-                'created_at' => $order->created_at,
-                'updated_at' => $order->updated_at,
-                'user' => $order->user,
-                'client' => $order->client,
-                'order_products' => $order->orderProducts->map(function ($orderProduct) {
-                    return [
-                        'id' => $orderProduct->id,
-                        'order_id' => $orderProduct->order_id,
-                        'product_id' => $orderProduct->product_id,
-                        'quantity_pack' => $orderProduct->quantity_pack,
-                        'quantity_piece' => $orderProduct->quantity_piece,
-                        'price_per_ton' => $orderProduct->price_per_ton,
-                        'price_per_unit' => $orderProduct->price_per_unit,
-                        'total_price' => $orderProduct->total_price,
-                        'total_weight' => $orderProduct->total_weight,
-                        'product' => [
-                            'id' => $orderProduct->product->id,
-                            'product_name' => $orderProduct->product->product_name,
-                        ],
-                    ];
-                }),
-            ];
+    } else {
+        // If no status parameter is present, exclude orders with status_id = 1
+        $query->whereHas('statuses', function ($q) {
+            $q->where('status_id', '!=', 1);
         });
-
-        return response()->json($result, 200);
     }
+
+    // Fetch the orders
+    $orders = $query->get();
+
+    // Get total count of orders
+    $totalCount = Order::count(); // Hamma buyurtmalar soni
+
+    // Get count of orders with status_id = 1
+    $statusOneCount = Order::whereHas('statuses', function ($q) {
+        $q->where('status_id', 1);
+    })->count();
+
+    // Format the orders
+    $result = $orders->map(function ($order) {
+        return [
+            'id' => $order->id,
+            'user_id' => $order->user_id,
+            'client_id' => $order->client_id,
+            'total_price' => $order->total_price,
+            'total_weight' => $order->total_weight,
+            'car_number' => $order->car_number ?? null,
+            'photos' => $order->photos,
+            'status' => $order->statuses()->pluck('statuses.id')->first(),
+            'created_at' => $order->created_at,
+            'updated_at' => $order->updated_at,
+            'user' => $order->user,
+            'client' => $order->client,
+            'order_products' => $order->orderProducts->map(function ($orderProduct) {
+                return [
+                    'id' => $orderProduct->id,
+                    'order_id' => $orderProduct->order_id,
+                    'product_id' => $orderProduct->product_id,
+                    'quantity_pack' => $orderProduct->quantity_pack,
+                    'quantity_piece' => $orderProduct->quantity_piece,
+                    'price_per_ton' => $orderProduct->price_per_ton,
+                    'price_per_unit' => $orderProduct->price_per_unit,
+                    'total_price' => $orderProduct->total_price,
+                    'total_weight' => $orderProduct->total_weight,
+                    'product' => [
+                        'id' => $orderProduct->product->id,
+                        'product_name' => $orderProduct->product->product_name,
+                    ],
+                ];
+            }),
+        ];
+    });
+
+    // Include the total count and count_offers in the response
+    return response()->json([
+        'count' => $totalCount, // Hamma buyurtmalar soni
+        'count_offers' => $statusOneCount, // Status 1 ga tegishli buyurtmalar soni
+        'orders' => $result,
+    ], 200);
+}
 
 
 
