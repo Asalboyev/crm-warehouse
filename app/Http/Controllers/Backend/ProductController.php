@@ -199,61 +199,121 @@ class ProductController extends Controller
 //    }
 
 
+    // public function store(Request $request)
+    // {
+    //     // Preprocess the input to replace commas with dots for numeric fields
+    //     $input = $request->all();
+    //     $fieldsToConvert = [
+    //         'price_per_ton', 'length_per_ton', 'price_per_meter',
+    //         'price_per_item', 'price_per_package', 'package_weight',
+    //         'package_length', 'weight_per_meter'
+    //     ];
+
+    //     foreach ($fieldsToConvert as $field) {
+    //         if (isset($input[$field])) {
+    //             $input[$field] = str_replace(',', '.', $input[$field]);
+    //         }
+    //     }
+
+    //     // Validate the data
+    //     $validatedData = $request->validate([
+    //         'product_name' => 'required|string|max:255',
+    //         'category_id' => 'required|exists:categories,id',
+    //         'country' => 'required|string|max:255',
+    //         'thickness' => 'required|numeric',
+    //         'length' => 'required|numeric',
+    //         'metal_type' => 'required|string|max:50',
+    //         'price_per_ton' => 'required|numeric',
+    //         'length_per_ton' => 'required|numeric',
+    //         'price_per_meter' => 'required|numeric',
+    //         'price_per_item' => 'required|numeric',
+    //         'price_per_package' => 'required|numeric',
+    //         'items_per_package' => 'required|integer',
+    //         'package_weight' => 'required|numeric',
+    //         'package_length' => 'required|numeric',
+    //         'weight_per_meter' => 'required|numeric',
+    //     ]);
+
+    //     // Calculate the weight per item in tons
+    //     if ($validatedData['package_weight'] > 0 && $validatedData['items_per_package'] > 0) {
+    //         $validatedData['weight_per_item'] = $validatedData['package_weight'] / $validatedData['items_per_package'];
+    //     } else {
+    //         $validatedData['weight_per_item'] = 0;
+    //     }
+
+    //     // Format weight_per_item to six decimal places
+    //     $validatedData['weight_per_item'] = number_format($validatedData['weight_per_item'], 6, '.', '');
+
+    //     // Set default values for total_units and total_packages
+    //     $validatedData['total_units'] = 0;
+    //     $validatedData['total_packages'] = 5; // Set total_packages to 5 by default
+
+    //     // Store the product in the database
+    //     Product::create($validatedData);
+
+    //     // Redirect back with success message
+    //     return redirect()->route('product.index')->with('message', 'Product created successfully!');
+    // }
     public function store(Request $request)
-    {
-        // Preprocess the input to replace commas with dots for numeric fields
-        $input = $request->all();
-        $fieldsToConvert = [
-            'price_per_ton', 'length_per_ton', 'price_per_meter',
-            'price_per_item', 'price_per_package', 'package_weight',
-            'package_length', 'weight_per_meter'
-        ];
+{
+    // Preprocess the input to replace commas with dots for numeric fields
+    $input = $request->all();
+    $fieldsToConvert = [
+        'price_per_ton', 'length_per_ton', 'price_per_meter',
+        'price_per_item', 'price_per_package', 'package_weight',
+        'package_length', 'weight_per_meter'
+    ];
 
-        foreach ($fieldsToConvert as $field) {
-            if (isset($input[$field])) {
-                $input[$field] = str_replace(',', '.', $input[$field]);
-            }
+    foreach ($fieldsToConvert as $field) {
+        if (isset($input[$field])) {
+            $input[$field] = str_replace(',', '.', $input[$field]);
         }
-
-        // Validate the data
-        $validatedData = $request->validate([
-            'product_name' => 'required|string|max:255',
-            'category_id' => 'required|exists:categories,id',
-            'country' => 'required|string|max:255',
-            'thickness' => 'required|numeric',
-            'length' => 'required|numeric',
-            'metal_type' => 'required|string|max:50',
-            'price_per_ton' => 'required|numeric',
-            'length_per_ton' => 'required|numeric',
-            'price_per_meter' => 'required|numeric',
-            'price_per_item' => 'required|numeric',
-            'price_per_package' => 'required|numeric',
-            'items_per_package' => 'required|integer',
-            'package_weight' => 'required|numeric',
-            'package_length' => 'required|numeric',
-            'weight_per_meter' => 'required|numeric',
-        ]);
-
-        // Calculate the weight per item in tons
-        if ($validatedData['package_weight'] > 0 && $validatedData['items_per_package'] > 0) {
-            $validatedData['weight_per_item'] = $validatedData['package_weight'] / $validatedData['items_per_package'];
-        } else {
-            $validatedData['weight_per_item'] = 0;
-        }
-
-        // Format weight_per_item to six decimal places
-        $validatedData['weight_per_item'] = number_format($validatedData['weight_per_item'], 6, '.', '');
-
-        // Set default values for total_units and total_packages
-        $validatedData['total_units'] = 0;
-        $validatedData['total_packages'] = 5; // Set total_packages to 5 by default
-
-        // Store the product in the database
-        Product::create($validatedData);
-
-        // Redirect back with success message
-        return redirect()->route('product.index')->with('message', 'Product created successfully!');
     }
+
+    // Validate the data
+    $validatedData = $request->validate([
+        'product_name' => 'required|string|max:255',
+        'category_id' => 'required|exists:categories,id',
+        'country' => 'required|string|max:255',
+        'thickness' => 'required|numeric',
+        'length' => 'required|numeric',
+        'metal_type' => 'required|string|max:50',
+        'price_per_ton' => 'required|numeric',
+        'length_per_ton' => 'required|numeric',
+        'price_per_meter' => 'required|numeric',
+        'price_per_item' => 'required|numeric',
+        'price_per_package' => 'required|numeric',
+        'items_per_package' => 'required|integer',
+        'package_weight' => 'required|numeric',
+        'package_length' => 'required|numeric',
+        'weight_per_meter' => 'required|numeric',
+    ]);
+
+    // Calculate the weight per item in tons (NO FORMATTING)
+    if ($validatedData['package_weight'] > 0 && $validatedData['items_per_package'] > 0) {
+        $validatedData['weight_per_item'] = $validatedData['package_weight'] / $validatedData['items_per_package'];
+    } else {
+        $validatedData['weight_per_item'] = 0;
+    }
+
+    // Calculate weight per meter
+    if ($validatedData['weight_per_item'] > 0 && $validatedData['length'] > 0) {
+        $validatedData['weight_per_meter'] = $validatedData['weight_per_item'] / $validatedData['length'];
+    } else {
+        $validatedData['weight_per_meter'] = 0;
+    }
+
+    // Set default values for total_units and total_packages
+    $validatedData['total_units'] = 0;
+    $validatedData['total_packages'] = 5; // Set total_packages to 5 by default
+
+    // Store the product in the database
+    Product::create($validatedData);
+
+    // Redirect back with success message
+    return redirect()->route('product.index')->with('message', 'Product created successfully!');
+}
+
 
 
 
