@@ -42,6 +42,69 @@ class LoginController extends Controller
 //
 //       return response()->json(['message' => 'Unauthorized'], 401);
 //   }
+    // public function login(Request $request)
+    // {
+    //     $credentials = $request->validate([
+    //         'email' => 'required|string|email',
+    //         'password' => 'required|string',
+    //     ]);
+
+    //     if (Auth::attempt($credentials)) {
+    //         $user = Auth::user();
+    //         $accessToken = $user->createToken('access_token')->plainTextToken;
+    //         $refreshToken = Str::random(60);
+
+    //         // Token yaratish vaqtini saqlash va amal qilish muddatini 1 minutga o‘rnatish
+    //         $user->tokens()->updateOrCreate(
+    //             ['name' => 'refresh_token'],
+    //             [
+    //                 'token' => hash('sha256', $refreshToken),
+    //                 'created_at' => Carbon::now(),
+    //                 'expires_at' => Carbon::now()->addDa(1) // Amal qilish muddati: 1 minut
+    //             ]
+    //         );
+
+    //         return response()->json([
+    //             'access_token' => $accessToken,
+    //             'refresh_token' => $refreshToken,
+    //             'role' => $user->role ?? 'No role',
+    //             'redirect_url' => url('dashboard'),
+    //         ]);
+    //     }
+
+    //     return response()->json(['message' => 'Unauthorized'], 401);
+    // }
+
+
+    // public function refresh(Request $request)
+    //     {
+    //         $refreshToken = $request->input('refresh_token');
+
+    //         // Hash the incoming refresh token
+    //         $hashedRefreshToken = hash('sha256', $refreshToken);
+
+    //         // Look for the hashed token in the database
+    //         $userToken = DB::table('personal_access_tokens')->where('token', $hashedRefreshToken)->first();
+
+    //         if (!$userToken) {
+    //             return response()->json(['message' => 'Invalid refresh token'], 401);
+    //         }
+
+    //         // Get the user associated with the refresh token
+    //         $user = User::find($userToken->tokenable_id);
+
+    //         // Create a new access token
+    //         $accessToken = $user->createToken('access_token')->plainTextToken; // Create new access token
+
+    //         return response()->json([
+    //             'access_token' => $accessToken, // Return new access token
+    //             'role' => $user->role ?? 'No role',
+    //             'redirect_url' => url('dashboard'),
+    //         ]);
+    //     }
+
+    // // Method to log out the user and delete all tokens
+
     public function login(Request $request)
     {
         $credentials = $request->validate([
@@ -51,16 +114,19 @@ class LoginController extends Controller
 
         if (Auth::attempt($credentials)) {
             $user = Auth::user();
+            // Create an access token with a long lifetime
             $accessToken = $user->createToken('access_token')->plainTextToken;
+
+            // Create a refresh token without an expiration time (unlimited lifetime)
             $refreshToken = Str::random(60);
 
-            // Token yaratish vaqtini saqlash va amal qilish muddatini 1 minutga o‘rnatish
+            // Save the refresh token in the database
             $user->tokens()->updateOrCreate(
                 ['name' => 'refresh_token'],
                 [
                     'token' => hash('sha256', $refreshToken),
                     'created_at' => Carbon::now(),
-                    'expires_at' => Carbon::now()->addMinute(1) // Amal qilish muddati: 1 minut
+                    'expires_at' => null, // No expiration for refresh token
                 ]
             );
 
@@ -75,35 +141,35 @@ class LoginController extends Controller
         return response()->json(['message' => 'Unauthorized'], 401);
     }
 
-
     public function refresh(Request $request)
-        {
-            $refreshToken = $request->input('refresh_token');
+    {
+        $refreshToken = $request->input('refresh_token');
 
-            // Hash the incoming refresh token
-            $hashedRefreshToken = hash('sha256', $refreshToken);
+        // Hash the incoming refresh token
+        $hashedRefreshToken = hash('sha256', $refreshToken);
 
-            // Look for the hashed token in the database
-            $userToken = DB::table('personal_access_tokens')->where('token', $hashedRefreshToken)->first();
+        // Look for the hashed token in the database
+        $userToken = DB::table('personal_access_tokens')->where('token', $hashedRefreshToken)->first();
 
-            if (!$userToken) {
-                return response()->json(['message' => 'Invalid refresh token'], 401);
-            }
-
-            // Get the user associated with the refresh token
-            $user = User::find($userToken->tokenable_id);
-
-            // Create a new access token
-            $accessToken = $user->createToken('access_token')->plainTextToken; // Create new access token
-
-            return response()->json([
-                'access_token' => $accessToken, // Return new access token
-                'role' => $user->role ?? 'No role',
-                'redirect_url' => url('dashboard'),
-            ]);
+        if (!$userToken) {
+            return response()->json(['message' => 'Invalid refresh token'], 401);
         }
 
-    // Method to log out the user and delete all tokens
+        // Get the user associated with the refresh token
+        $user = User::find($userToken->tokenable_id);
+
+        // Create a new access token with a long lifetime
+        $accessToken = $user->createToken('access_token')->plainTextToken;
+
+        return response()->json([
+            'access_token' => $accessToken, // Return new access token
+            'role' => $user->role ?? 'No role',
+            'redirect_url' => url('dashboard'),
+        ]);
+    }
+
+
+
     public function logout(Request $request)
     {
         // Check if the user is authenticated
