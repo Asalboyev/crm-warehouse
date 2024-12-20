@@ -97,33 +97,7 @@
                                         </div>
                                         <!--end::Input-->
                                     </div>
-                                    <!--end::Input group-->
-                                    <!--begin::Input group-->
-                                    <div class="mb-10">
-                                        <!--begin::Label-->
-                                        <label class="form-label fw-bold">Member Type:</label>
-                                        <!--end::Label-->
-                                        <!--begin::Options-->
-                                        <div class="d-flex">
-                                            <!--begin::Options-->
-                                            <label class="form-check form-check-sm form-check-custom form-check-solid me-5">
-                                                <input class="form-check-input" type="checkbox" value="1" />
-                                                <span class="form-check-label">Author</span>
-                                            </label>
-
-                                            <!--end::Options-->
-                                        </div>
-                                        <!--end::Options-->
-                                    </div>
-                                    <!--end::Input group-->
-                                    <!--begin::Input group-->
-                                    <!--end::Input group-->
-                                    <!--begin::Actions-->
-                                    <div class="d-flex justify-content-end">
-                                        <button type="reset" class="btn btn-sm btn-light btn-active-light-primary me-2" data-kt-menu-dismiss="true">Reset</button>
-                                        <button type="submit" class="btn btn-sm btn-primary" data-kt-menu-dismiss="true">Apply</button>
-                                    </div>
-                                    <!--end::Actions-->
+                                   
                                 </div>
                                 <!--end::Form-->
                             </div>

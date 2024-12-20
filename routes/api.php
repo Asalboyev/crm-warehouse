@@ -60,7 +60,7 @@ Route::prefix('v1')->group(function () {
             Route::post('products/{id}/photos', [ProductController::class, 'addPhotos']);
             Route::post('orders/{id}/photos', [OrderController::class, 'updatePhotos']);
 
-
+       
 
         Route::delete('/photos/{photoId}', [ProductController::class, 'deletePhoto']);
             Route::put('/orders/{order}', [OrderController::class, 'update']);

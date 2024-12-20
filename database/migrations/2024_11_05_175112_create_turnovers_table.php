@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('turnovers', function (Blueprint $table) {
             $table->id();$table->foreignId('product_id')->constrained()->onDelete('cascade');
             $table->foreignId('user_id')->nullable()->constrained()->onDelete('set null');
-            $table->enum('type', ['kirim', 'chiqim']); // kirim = incoming, chiqim = outgoing
+            $table->enum('type', ['kirim', 'chiqim','Ayrilib tashlandi ']); // kirim = incoming, chiqim = outgoing
             $table->integer('quantity_pack')->default(0); // Pack quantity
             $table->integer('quantity_piece')->default(0); // Individual unit quantity
             $table->decimal('total_weight', 10, 2)->default(0); // Total weight in tons

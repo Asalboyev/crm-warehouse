@@ -305,7 +305,7 @@ class ProductController extends Controller
 
     // Set default values for total_units and total_packages
     $validatedData['total_units'] = 0;
-    $validatedData['total_packages'] = 5; // Set total_packages to 5 by default
+    $validatedData['total_packages'] = 0; // Set total_packages to 5 by default
 
     // Store the product in the database
     Product::create($validatedData);
@@ -356,58 +356,65 @@ class ProductController extends Controller
 //        return view('admin.product.show', compact('product', 'categories', 'salesDetails'));
 //    }
 
-    public function show($id)
-    {
-        // Kategoriyalarni olish
-        $categories = Category::query()->get();
+public function show($id)
+{
+    // Kategoriyalarni olish
+    $categories = Category::query()->get();
 
-        // Mahsulotni ID orqali olish
-        $product = Product::find($id);
-        if (!$product) {
-            return redirect()->route('product.index')->with('error', 'Mahsulot topilmadi!');
-        }
-
-        // Mahsulotning savdo tafsilotlarini olish
-        $salesDetails = OrderProduct::with(['order.user', 'order.client'])
-            ->where('product_id', $id)
-            ->get()
-            ->map(function ($orderProduct) {
-                $order = $orderProduct->order;
-
-                return [
-                    'order_id' => $order ? $order->id : null,
-                    'sold_to_id' => $order ? optional($order->client)->id : null,
-                    'sold_to' => $order ? optional($order->client)->name : 'Ma\'lumot yo\'q',
-                    'sold_to_phone' => $order ? optional($order->client)->phone : 'Ma\'lumot yo\'q',
-                    'sold_by_id' => $order ? optional($order->user)->id : null,
-                    'sold_by' => $order ? optional($order->user)->name : 'Ma\'lumot yo\'q',
-                    'sold_by_phone' => $order ? optional($order->user)->email : 'Ma\'lumot yo\'q',
-                    'times_sold' => $orderProduct->times_sold,
-                    'quantity_pack' => $orderProduct->quantity_pack,
-                    'quantity_piece' => $orderProduct->quantity_piece,
-                    'total_quantity' => $orderProduct->quantity_pack + $orderProduct->quantity_piece,
-                    'total_weight' => $orderProduct->total_weight,
-                    'total_price' => $orderProduct->total_price,
-                    'price_per_ton' => $orderProduct->price_per_ton,
-                    'price_per_unit' => $orderProduct->price_per_unit,
-                ];
-            });
-
-        // Mahsulotning aylanma tafsilotlarini olish
-        $turnoverDetails = Turnover::where('product_id', $id)->with('user')->get()->map(function ($turnover) {
-            return [
-                'type' => $turnover->type,
-                'date' => $turnover->created_at->format('Y-m-d'),
-                'quantity_pack' => $turnover->quantity_pack,
-                'quantity_piece' => $turnover->quantity_piece,
-                'total_weight' => $turnover->total_weight,
-                'user_name' => $turnover->user->name ?? 'Ma\'lumot yo\'q',
-            ];
-        });
-
-        // Mahsulot va savdo tafsilotlarini ko'rinishga uzatish
-        return view('admin.product.show', compact('product', 'categories', 'salesDetails', 'turnoverDetails'));
+    // Mahsulotni ID orqali olish
+    $product = Product::find($id);
+    if (!$product) {
+        return redirect()->route('product.index')->with('error', 'Mahsulot topilmadi!');
     }
+
+    // Mahsulotning savdo tafsilotlarini olish
+    $salesDetails = OrderProduct::with(['order.user', 'order.client'])
+        ->where('product_id', $id)
+        ->paginate(10); // Paginate the data with 10 items per page
+
+    $salesDetails->getCollection()->transform(function ($orderProduct) {
+        $order = $orderProduct->order;
+
+        return [
+            'order_id' => $order ? $order->id : null,
+            'sold_to_id' => $order ? optional($order->client)->id : null,
+            'sold_to' => $order ? optional($order->client)->name : 'Ma\'lumot yo\'q',
+            'sold_to_phone' => $order ? optional($order->client)->phone : 'Ma\'lumot yo\'q',
+            'sold_by_id' => $order ? optional($order->user)->id : null,
+            'sold_by' => $order ? optional($order->user)->name : 'Ma\'lumot yo\'q',
+            'sold_by_phone' => $order ? optional($order->user)->email : 'Ma\'lumot yo\'q',
+            'times_sold' => $orderProduct->times_sold,
+            'quantity_pack' => $orderProduct->quantity_pack,
+            'quantity_piece' => $orderProduct->quantity_piece,
+            'total_quantity' => $orderProduct->quantity_pack + $orderProduct->quantity_piece,
+            'total_weight' => $orderProduct->total_weight,
+            'total_price' => $orderProduct->total_price,
+            'price_per_ton' => $orderProduct->price_per_ton,
+            'price_per_unit' => $orderProduct->price_per_unit,
+            'created_at' => $orderProduct->created_at->format('Y-m-d'),
+        ];
+    });
+
+    // Mahsulotning aylanma tafsilotlarini olish
+    $turnoverDetails = Turnover::where('product_id', $id)
+        ->with('user')
+        ->paginate(10); // Paginate the data with 10 items per page
+
+    $turnoverDetails->getCollection()->transform(function ($turnover) {
+        return [
+            'type' => $turnover->type,
+            'date' => $turnover->created_at->format('Y-m-d'),
+            'quantity_pack' => $turnover->quantity_pack,
+            'quantity_piece' => $turnover->quantity_piece,
+            'total_weight' => $turnover->total_weight,
+            'user_name' => $turnover->user->name ?? 'Ma\'lumot yo\'q',
+        ];
+    });
+
+    // Mahsulot va savdo tafsilotlarini ko'rinishga uzatish
+    return view('admin.product.show', compact('product', 'categories', 'salesDetails', 'turnoverDetails'));
+}
+
 
 
 // View product details (with stock and pricing)
@@ -546,50 +553,69 @@ class ProductController extends Controller
 //        return redirect()->route('product.index')->with('message', 'Mahsulot qoldiqlar qo\'shildi');
 //    }
 
+public function addPackage(Request $request, $id)
+{
+    // Paketlar va birliklar uchun tasdiqlash
+    $validated = $request->validate([
+        'total_packages' => 'nullable|integer', // Ijobiy va salbiy qiymatlarga ruxsat
+        'total_units' => 'nullable|integer',   // Ijobiy va salbiy qiymatlarga ruxsat
+    ]);
 
-    public function addPackage(Request $request, $id)
-    {
-        // Validate incoming request for adding packages and units
-        $validated = $request->validate([
-            'total_packages' => 'nullable|integer|min:0', // Allow adding packages
-            'total_units' => 'nullable|integer|min:0', // Allow adding individual units
-        ]);
+    // Mahsulotni topish
+    $product = Product::findOrFail($id);
 
-        // Find the product by ID
-        $product = Product::findOrFail($id);
+    // Kiritilgan yangi qiymatlar
+    $newItemsPerPackage = $validated['total_packages'] ?? 0;
+    $newTotalUnits = $validated['total_units'] ?? 0;
 
-        // Add the new values to the existing package and unit counts
-        $newItemsPerPackage = $validated['total_packages'] ?? 0;
-        $newTotalUnits = $validated['total_units'] ?? 0;
+    // Yangi jami paketlar va birliklarni hisoblash
+    $updatedTotalPackages = $product->total_packages + $newItemsPerPackage;
+    $updatedTotalUnits = $product->total_units + $newTotalUnits;
 
-        // Update the product's total packages and units
-        $product->total_packages += $newItemsPerPackage;
-        $product->total_units += $newTotalUnits;
-
-        // Calculate the new total weight:
-        // Total weight = (total number of packages * weight per package) + (total individual units * weight per unit)
-        $newTotalWeight = ($product->total_packages * $product->package_weight)
-            + ($product->total_units * $product->weight_per_item);
-
-        // Update total_weight for the product
-        $product->total_weight = $newTotalWeight;
-
-        // Save the updated product information
-        $product->save();
-
-        // Log turnover for 'kirim' (incoming stock) type if there are additions
-        Turnover::create([
-            'product_id' => $product->id,
-            'user_id' => auth()->id(),
-            'type' => 'kirim', // Type 'kirim' for added stock
-            'quantity_pack' => $newItemsPerPackage, // Quantity of packages added
-            'quantity_piece' => $newTotalUnits, // Quantity of individual units added
-            'total_weight' => $newTotalWeight, // Weight for added stock only
-        ]);
-
-        // Redirect back to the product index page with a success message
-        return redirect()->route('product.index')->with('message', 'Mahsulot qoldiqlar qo\'shildi');
+    // Salbiy miqdorlarga ruxsat berilmaydi
+    if ($updatedTotalPackages < 0 || $updatedTotalUnits < 0) {
+        return redirect()->back()->withErrors('Jami paketlar yoki birliklar manfiy bo‘lishi mumkin emas.');
     }
+
+    // Mahsulotning jami paketlari va birliklarini yangilash
+    $product->total_packages = $updatedTotalPackages;
+    $product->total_units = $updatedTotalUnits;
+
+    // Yangi jami og‘irlikni hisoblash
+    $newTotalWeight = ($product->total_packages * $product->package_weight)
+        + ($product->total_units * $product->weight_per_item);
+
+    $product->total_weight = $newTotalWeight;
+
+    // Mahsulotni saqlash
+    $product->save();
+
+    // Log turi va xabarni aniqlash
+    if ($newItemsPerPackage < 0 || $newTotalUnits < 0) {
+        $type = 'Ayrilib tashlandi'; // Ayrilgan bo‘lsa 'chiqim'
+        $message = 'Ayrilib tashlandi';
+    } else {
+        $type = 'kirim'; // Qo‘shilgan bo‘lsa 'kirim'
+        $message = 'Qo‘shildi';
+    }
+
+    // Turnover logini yaratish
+    Turnover::create([
+        'product_id' => $product->id,
+        'user_id' => auth()->id(),
+        'type' => $type, // Faqat 'kirim' yoki 'chiqim'
+        'quantity_pack' => abs($newItemsPerPackage), // Salbiy qiymatlar ijobiyga o'zgartiriladi
+        'quantity_piece' => abs($newTotalUnits),     // Salbiy qiymatlar ijobiyga o'zgartiriladi
+        'total_weight' => abs(($newItemsPerPackage * $product->package_weight)
+            + ($newTotalUnits * $product->weight_per_item)), // Faqat ijobiy qiymatlar
+        'message' => $message, // To‘liq xabar
+    ]);
+
+    // Foydalanuvchini muvaffaqiyatli xabar bilan qaytarish
+    return redirect()->route('product.index')->with('message', "Mahsulot qoldiqlari muvaffaqiyatli yangilandi. $message.");
+}
+
+
 
 
 //    public function addPackage(Request $request, $id)

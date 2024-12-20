@@ -31,12 +31,15 @@ class OrderController extends Controller
     }
     public function show($id)
     {
-        // Buyurtma va unga tegishli barcha ma'lumotlarni olish, shu jumladan OrderProductlar
+        // Buyurtma va unga tegishli barcha ma'lumotlarni olish
         $order = Order::with(['client', 'user', 'statuses', 'orderProducts.product'])->findOrFail($id);
 
-        return
-            view('admin.orders.show', compact('order'));
+        // Order modelidan fotosuratlarni olish
+        $photos = $order->photos ?? []; // Agar 'photos' null bo'lsa, bo'sh massiv qaytaradi
+
+        return view('admin.orders.show', compact('order', 'photos'));
     }
+
 
 
 

@@ -19,8 +19,9 @@ class Order extends Model
         'photos'
     ];
     protected $casts = [
-        'photos' => 'array', // JSON bo‘lib massiv sifatida ishlaydi
+        'photos' => 'array',
     ];
+
 
 
     // Define the relationship with OrderProduct
