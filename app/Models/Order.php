@@ -17,6 +17,7 @@ class Order extends Model
         'car_number',
         'order_status',
         'photos'
+        ,'acceptance'
     ];
     protected $casts = [
         'photos' => 'array',

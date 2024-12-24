@@ -320,6 +320,7 @@ public function index(Request $request)
             'client_id' => $order->client_id,
             'total_price' => $order->total_price,
             'total_weight' => $order->total_weight,
+            'acceptance' => $order->acceptance,
             'car_number' => $order->car_number ?? null,
             'photos' => $order->photos,
             'status' => $order->statuses()->pluck('statuses.id')->first(),
@@ -1098,6 +1099,7 @@ public function store(Request $request)
         // Validate the incoming request
         $validated = $request->validate([
             'order_status' => 'required|integer',
+            'acceptance' => 'nullable|boolean', // Optional acceptance status
             'car_number' => 'nullable|string|max:255', // Validation for car_number
         ]);
 
@@ -1114,13 +1116,17 @@ public function store(Request $request)
                 $order->save();
             }
 
-            // Get the previous status name (fetch it from the order's current status)
-            $previousStatus = $order->statuses()->latest()->first(); // Get the most recent status
-
-            // Check if previous status exists and get its name
+            // Get the previous status name
+            $previousStatus = $order->statuses()->latest()->first();
             $previousStatusName = $previousStatus && $previousStatus->statuses
                 ? $previousStatus->statuses->name
-                : 'Unknown'; // Handle the case where status is null
+                : 'Unknown';
+
+            // Update the acceptance status if provided
+            if (isset($validated['acceptance'])) {
+                $order->acceptance = $validated['acceptance'];
+                $order->save();
+            }
 
             // Remove the existing status for the order
             DB::table('order_status')->where('order_id', $order->id)->delete();
@@ -1137,7 +1143,7 @@ public function store(Request $request)
             $newStatus = Status::findOrFail($validated['order_status']);
             $newStatusName = $newStatus->name;
 
-            // Create notifications for all users (assuming you want to notify all users)
+            // Notify all users about the status update
             $users = User::all(); // Fetch all users, or adjust based on your needs
             foreach ($users as $user) {
                 Notification::create([
@@ -1189,6 +1195,7 @@ public function store(Request $request)
             return response()->json(['message' => 'Order update failed: ' . $e->getMessage()], 500);
         }
     }
+
 
     public function updatePhotos(Request $request, $id)
     {

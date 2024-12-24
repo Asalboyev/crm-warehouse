@@ -20,6 +20,7 @@ return new class extends Migration
             $table->string('car_number')->nullable();  // Nullable car number if needed
             $table->text('photos')->nullable();
             $table->boolean('order_status')->default(0); // Set default to 0 or 1 based on your logic
+            $table->boolean('acceptance')->default(0); // Set default to 0 or 1 based on your logic
             $table->timestamps();
         });
     }
