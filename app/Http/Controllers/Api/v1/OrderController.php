@@ -265,54 +265,36 @@ class OrderController extends Controller
 
 public function index(Request $request)
 {
-    // Base query
+    // Base query with relationships
     $query = Order::with(['user', 'client', 'orderProducts.product', 'statuses']);
 
-    // Check if a status filter is applied
+    // Apply status filtering if the parameter exists
     if ($request->has('status')) {
         $statusValue = $request->get('status');
 
-        // If status is specifically set to "1", include only orders with status_id = 1
-        if ($statusValue === '1') {
-            $query->whereHas('statuses', function ($q) {
-                $q->where('status_id', 1);
-            });
-        } elseif ($statusValue === '' || $statusValue === '0') {
-            // If status is empty (e.g., ?status=) or "0", exclude orders with status_id = 1
-            $query->whereHas('statuses', function ($q) {
-                $q->where('status_id', '!=', 1);
-            });
-        } else {
-            // For other status values, check if the status exists and filter by it
-            $status = Status::where('name', strtolower($statusValue))
-                ->orWhere('id', $statusValue)
-                ->first();
-
-            if ($status) {
-                $query->whereHas('statuses', function ($q) use ($status) {
-                    $q->where('status_id', $status->id);
-                });
-            }
-        }
-    } else {
-        // If no status parameter is present, exclude orders with status_id = 1
-        $query->whereHas('statuses', function ($q) {
-            $q->where('status_id', '!=', 1);
+        // Filter by specific status
+        $query->whereHas('statuses', function ($q) use ($statusValue) {
+            $q->where('status_id', $statusValue);
         });
     }
 
-    // Fetch the orders
+    // Order by created_at in descending order
+    $query->orderBy('created_at', 'desc');
+
+    // Fetch the filtered orders
     $orders = $query->get();
 
-    // Get total count of orders
-    $totalCount = Order::count(); // Hamma buyurtmalar soni
+    // Get total count of all orders
+    $totalCount = Order::count();
 
-    // Get count of orders with status_id = 1
-    $statusOneCount = Order::whereHas('statuses', function ($q) {
-        $q->where('status_id', 1);
-    })->count();
+    // Get count of orders for the requested status
+    $statusCount = $request->has('status')
+        ? Order::whereHas('statuses', function ($q) use ($request) {
+            $q->where('status_id', $request->get('status'));
+        })->count()
+        : 0;
 
-    // Format the orders
+    // Format the orders for the response
     $result = $orders->map(function ($order) {
         return [
             'id' => $order->id,
@@ -348,13 +330,14 @@ public function index(Request $request)
         ];
     });
 
-    // Include the total count and count_offers in the response
+    // Return response with total count, status count, and orders
     return response()->json([
-        'count' => $totalCount, // Hamma buyurtmalar soni
-        'count_offers' => $statusOneCount, // Status 1 ga tegishli buyurtmalar soni
-        'orders' => $result,
+        'count' => $totalCount,          // Total count of all orders
+        'status_counts' => $statusCount, // Count of orders for the filtered status
+        'orders' => $result,             // Filtered orders
     ], 200);
 }
+
 
 
 
@@ -519,7 +502,7 @@ public function store(Request $request)
     $validated = $request->validate([
         'client_id' => 'required|exists:customers,id',
         'products' => 'required|array',
-        'status' => 'required|integer',
+        'status' => 'required|exists:statuses,id', // Ensure the status exists
     ]);
 
     DB::beginTransaction();
@@ -534,7 +517,6 @@ public function store(Request $request)
             'client_id' => $request->client_id,
             'total_price' => 0,
             'total_weight' => 0,
-            'order_status' => $request->status,
             'car_number' => $request->car_number,
         ]);
 
@@ -613,6 +595,9 @@ public function store(Request $request)
         $order->total_weight = $calculatedTotalWeight;
         $order->save();
 
+        // Associate the status with the order
+        $order->statuses()->sync([$request->status]);
+
         DB::commit();
 
         return response()->json([
@@ -632,7 +617,6 @@ public function store(Request $request)
         return response()->json(['message' => 'Order creation failed: ' . $e->getMessage()], 500);
     }
 }
-
 
 
 // View order details
