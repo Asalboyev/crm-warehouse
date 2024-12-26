@@ -31,20 +31,25 @@ class CustomerController extends Controller
         // Foydalanuvchi ma'lumotlarini tasdiqlash
         $validatedData = $request->validate([
             'name' => 'required|string|max:255',
-            'phone' => 'required|string|max:20|unique:customers,phone', // Make phone unique
+            'phone' => 'required|string|max:20|unique:customers,phone', // Telefon raqamini yagona qilish
             'company' => 'required|string|max:100',
         ]);
+
+        // Agar status tanlanmasa, 0 qiymatini tayinlash
+        $status = $request->input('status', 0);
 
         // Foydalanuvchini yaratish
         $customer = Customer::create([
             'name' => $validatedData['name'],
             'company' => $validatedData['company'],
             'phone' => $validatedData['phone'],
+            'status' => $status, // Statusni saqlash
         ]);
 
         // Foydalanuvchi ma'lumotlarini ko'rsatish
         return redirect()->route('customers.index')->with(['message' => 'Successfully added!']);
     }
+
     public function edit(string $id)
     {
         $customer = Customer::findOrFail($id);
@@ -57,9 +62,13 @@ class CustomerController extends Controller
         // Foydalanuvchi ma'lumotlarini tasdiqlash
         $validatedData = $request->validate([
             'name' => 'required|string|max:255',
-            'phone' => 'required|string|max:20|unique:customers,phone,' . $id, // Ignore current customer's phone
+            'phone' => 'required|string|max:20|unique:customers,phone,' . $id, // Joriy mijozning telefon raqamini hisobga olmaslik
             'company' => 'required|string|max:100',
+            'status' => 'nullable|in:0,1', // Statusni validatsiya qilish (0 yoki 1)
         ]);
+
+        // Agar status tanlanmasa, 0 bo'lishini ta'minlash
+        $status = $request->input('status', 0);
 
         // Foydalanuvchini yangilash
         $customer = Customer::findOrFail($id);
@@ -67,11 +76,13 @@ class CustomerController extends Controller
             'name' => $validatedData['name'],
             'company' => $validatedData['company'],
             'phone' => $validatedData['phone'],
+            'status' => $status, // Statusni yangilash
         ]);
 
         // Foydalanuvchi ma'lumotlarini ko'rsatish
         return redirect()->route('customers.index')->with(['message' => 'Successfully updated!']);
     }
+
     public function destroy($id)
     {
         // Foydalanuvchini topish va o'chirish

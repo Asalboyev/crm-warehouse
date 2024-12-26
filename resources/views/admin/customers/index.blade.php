@@ -193,6 +193,22 @@
                                                         <!--end::Input-->
                                                         <div class="fv-plugins-message-container invalid-feedback"></div>
                                                     </div>
+                                                    <div class="fv-row mb-7 fv-plugins-icon-container">
+    <!--begin::Label-->
+                                                        <label class="required fw-bold fs-6 mb-2">Status</label>
+                                                        <!--end::Label-->
+                                                        <!--begin::Input-->
+                                                        <div>
+                                                            <label>
+                                                                <input type="radio" name="status" value="1"> Active
+                                                            </label>
+                                                        </div>
+                                                        @error('status')
+                                                            <div class="invalid-feedback">{{ $message }}</div>
+                                                        @enderror
+                                                        <!--end::Input-->
+                                                        <div class="fv-plugins-message-container invalid-feedback"></div>
+                                                    </div>
 
                                                     <div class="fv-row mb-7 fv-plugins-icon-container">
                                                         <!--begin::Label-->
@@ -405,6 +421,26 @@
                                                                     <!--end::Input-->
                                                                     <div class="fv-plugins-message-container invalid-feedback"></div>
                                                                 </div>
+                                                                <div class="fv-row mb-7 fv-plugins-icon-container">
+                                                        <!--begin::Label-->
+                                                        <label class="required fw-bold fs-6 mb-2">Status</label>
+                                                        <!--end::Label-->
+                                                        <!--begin::Input-->
+                                                        <div>
+                                                            <label>
+                                                                <input type="radio" name="status" value="1" {{ old('status', $customer->status) == '1' ? 'checked' : '' }}> Active
+                                                            </label>
+                                                            <label>
+                                                                <input type="radio" name="status" value="0" {{ old('status', $customer->status) == '0' ? 'checked' : '' }}> Inactive
+                                                            </label>
+                                                        </div>
+                                                        @error('status')
+                                                            <div class="invalid-feedback">{{ $message }}</div>
+                                                        @enderror
+                                                        <!--end::Input-->
+                                                        <div class="fv-plugins-message-container invalid-feedback"></div>
+                                                    </div>
+
                                                                 <div class="fv-row mb-7 fv-plugins-icon-container">
                                                                     <!--begin::Label-->
                                                                     <label class="required fw-bold fs-6 mb-2">Company</label>

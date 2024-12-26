@@ -50,27 +50,51 @@ class CustomersController extends Controller
     {
         $validatedData = $request->validate([
             'name' => 'required|string|max:255',
-            'phone' => 'required|string|max:20|unique:customers,phone',
+            'phone' => 'required|string|max:20|unique:customers,phone', // Telefon raqamini yagona qilish
             'company' => 'required|string|max:100',
         ]);
 
-        $customer = Customer::create($validatedData);
+        // Agar status tanlanmasa, 0 qiymatini tayinlash
+        $status = $request->input('status', 0);
+
+        // Foydalanuvchini yaratish
+        $customer = Customer::create([
+            'name' => $validatedData['name'],
+            'company' => $validatedData['company'],
+            'phone' => $validatedData['phone'],
+            'status' => $status, // Statusni saqlash
+        ]);
 
         return response()->json($customer, 201); // 201 Created
     }
 
     public function apiUpdate(Request $request, $id)
     {
+        // Foydalanuvchi ma'lumotlarini tasdiqlash
         $validatedData = $request->validate([
             'name' => 'required|string|max:255',
-            'phone' => 'required|string|max:20|unique:customers,phone,' . $id,
+            'phone' => 'required|string|max:20|unique:customers,phone,' . $id, // Telefonni yagona qilish
             'company' => 'required|string|max:100',
+            'status' => 'nullable|in:0,1', // Statusni validatsiya qilish (0 yoki 1)
         ]);
 
-        $customer = Customer::findOrFail($id);
-        $customer->update($validatedData);
+        // Agar status tanlanmasa, 0 bo'lishini ta'minlash
+        $status = $request->input('status', 0);
 
-        return response()->json($customer);
+        // Foydalanuvchini yangilash
+        $customer = Customer::findOrFail($id);
+        $customer->update([
+            'name' => $validatedData['name'],
+            'phone' => $validatedData['phone'],
+            'company' => $validatedData['company'],
+            'status' => $status, // Statusni yangilash
+        ]);
+
+        // Yangilangan foydalanuvchini JSON formatida qaytarish
+        return response()->json([
+            'message' => 'Successfully updated!',
+            'customer' => $customer,
+        ]);
     }
 
     public function apiDestroy($id)

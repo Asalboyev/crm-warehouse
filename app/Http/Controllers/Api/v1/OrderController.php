@@ -342,7 +342,6 @@ public function index(Request $request)
 
 
 
-
 //    public function store(Request $request)
 //    {
 //        // Validate the incoming request
